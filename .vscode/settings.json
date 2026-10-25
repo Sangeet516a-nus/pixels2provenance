@@ -1,0 +1,9 @@
+{
+  "python.analysis.extraPaths": ["${workspaceFolder}/src"],
+  "python.terminal.activateEnvironment": true,
+  "terminal.integrated.env.windows": { "PYTHONPATH": "${workspaceFolder}/src" },
+  "terminal.integrated.env.osx": { "PYTHONPATH": "${workspaceFolder}/src" },
+  "terminal.integrated.env.linux": { "PYTHONPATH": "${workspaceFolder}/src" },
+  "files.exclude": { "**/__pycache__": true },
+  "files.watcherExclude": { "**/outputs/**": true, "**/outputs_demo/**": true, "**/data/raw/**": true }
+}

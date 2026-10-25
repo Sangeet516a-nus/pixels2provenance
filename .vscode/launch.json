@@ -1,0 +1,129 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "P2P: run full pipeline (real data)",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/run_pipeline.py",
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "P2P: run ONE stage (real data)",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/run_pipeline.py",
+      "args": [
+        "--only",
+        "${input:stage}"
+      ],
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "P2P: run from a stage to the end (real data)",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/run_pipeline.py",
+      "args": [
+        "--from",
+        "${input:stage}"
+      ],
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "P2P DEMO: make synthetic data",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/tools/make_demo_data.py",
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "P2P DEMO: run full pipeline on synthetic data",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/run_pipeline.py",
+      "args": [
+        "--config",
+        "config_demo.yaml"
+      ],
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "Tool: explain a stage (purpose, files, numbers)",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/tools/show_stage.py",
+      "args": [
+        "${input:stage}"
+      ],
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "Tool: inspect a FITS file",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/tools/inspect_fits.py",
+      "args": [
+        "${input:fitsfile}"
+      ],
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "Tool: inspect catalog.csv",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/tools/inspect_catalog.py",
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal"
+    }
+  ],
+  "inputs": [
+    {
+      "id": "stage",
+      "type": "pickString",
+      "description": "Stage",
+      "options": [
+        "0",
+        "1a",
+        "1b",
+        "1c",
+        "1d",
+        "1e",
+        "2a",
+        "2b",
+        "2c",
+        "2d",
+        "2e",
+        "3a",
+        "3b",
+        "3c",
+        "5a",
+        "5b",
+        "4a",
+        "4b",
+        "4c",
+        "4d",
+        "6a",
+        "6b",
+        "6c",
+        "7a",
+        "7b",
+        "7c",
+        "8"
+      ]
+    },
+    {
+      "id": "fitsfile",
+      "type": "promptString",
+      "description": "Path to a _drc.fits file",
+      "default": "data/raw/"
+    }
+  ]
+}

@@ -1,0 +1,213 @@
+# =====================================================================
+# From Pixels to Provenance - pipeline configuration
+# Every stage reads its settings from this file. Paths are relative to
+# the project folder (the folder that holds this file).
+# =====================================================================
+
+project:
+  name: "From Pixels to Provenance"
+  seed: 42
+  n_jobs: -1                 # CPU workers for statmorph / clustering (-1 = all cores)
+  device: auto               # auto | cpu | cuda | mps   (deep-learning stages)
+
+paths:
+  raw: data/raw              # put your *_drc.fits / *_drz.fits files here
+  catalogs: data/catalogs    # GZH / Gaia / CANDELS tables (CSV, CSV.GZ or FITS)
+  outputs: outputs           # every stage writes into outputs/<stage folder>/
+
+# ---------------------------------------------------------------- Stage 0
+partition:
+  mode: auto                 # auto = derive regions from the FITS footprints | manual
+  collar_arcmin: 0.1         # buffer ring around every region (proposal: 2' for large mosaics;
+                             # a single ACS pointing is only ~3.4' wide: 0.1' = 6" keeps stripes usable)
+  fractions: {train: 0.70, dev: 0.15, test: 0.15}
+  min_pointings_for_whole_assignment: 3   # fewer pointings -> split each pointing into stripes
+  external_patterns: []      # filename / TARGNAME substrings that mark CANDELS (external) pointings,
+                             # e.g. ["EGS", "egs"]. Everything else is GZH train/dev/test.
+  phase7_region: auto        # auto = external pointings if any, else the held-out TEST split
+                             # (one field: Phase 7 is evaluated on galaxies never trained on) | external | test
+  manual_regions: []         # used when mode: manual, e.g.
+  #  - {name: COSMOS_A, ra: [150.05, 150.15], dec: [2.15, 2.25], split: train}
+
+# ---------------------------------------------------------------- Stage 1a
+acquisition:
+  file_patterns: ["*_drc.fits", "*_drz.fits", "*_drc.fits.gz", "*_drz.fits.gz"]
+  group_radius_arcsec: 60    # files whose centres are closer than this form one pointing ...
+  group_min_overlap: 0.5     # ... and so do files whose footprints overlap by >= 50% of the smaller one
+                             # (bands of one field taken by different HST programmes)
+  bands: auto                # auto | list such as [F435W, F606W, F814W] (blue -> red)
+  max_bands: 3
+  detection_band: auto       # auto = reddest band in each pointing
+  download:                  # optional: fetch files from MAST (needs internet + astroquery)
+    enabled: false
+    targets:
+      - {ra: 53.12, dec: -27.80, radius_deg: 0.03, instrument: "ACS/WFC", filters: [F435W, F606W, F814W]}
+    max_files_per_target: 3
+
+# ---------------------------------------------------------------- Stage 1b
+frame_qc:
+  tile: 128
+  train_stride: 128
+  score_stride: 64           # 50% overlap so artefacts on a tile edge are not split
+  min_tile_coverage: 0.9
+  max_train_tiles: 4000
+  latent_dim: 128
+  epochs: 8                  # minimum epochs ...
+  min_steps: 1000            # ... and at least this many optimisation steps
+  batch_size: 64
+  threshold_percentile: 99.0
+  exclude_flagged: false     # true = drop sources in flagged tiles from training. Default false:
+                             # with no labelled artefacts the CAE also flags rare bright galaxies.
+
+# ---------------------------------------------------------------- Stage 1c
+detection:
+  background_box: 64
+  background_filter: 3
+  kernel_fwhm_px: 3.0
+  nsigma: 2.0
+  npixels: 10
+  deblend_nlevels: 32
+  deblend_contrast: 0.001
+  correlated_noise_factor: 1.0   # drizzled noise is correlated; >1 inflates the rms (see README)
+  # ---- band registration (bands from different HST programmes can disagree by ~1") ----
+  register_bands: true           # measure each band's offset against the detection band and remove it
+  register_search_arcsec: 3.0    # largest offset searched for
+  max_band_offset_arcsec: 0.05   # Stage 1c FAILS if a band is still offset by more than this
+  register_min_significance: 5.0 # the offset peak must hold >= 5x the pairs expected by chance
+  band_offsets_arcsec: {}        # known offsets instead of measured ones, band minus detection band,
+                                 # [dRA cos(dec), dDec] in arcsec, e.g. {F475W: [0.154, 0.866]}
+  # ---- cosmic rays (single-exposure products cannot reject them) ----
+  cr_rejection: two_band         # two_band = a source must be confirmed by a second band | none
+  confirm_snr: 3.0               # S/N in another covering band that confirms a source as real ...
+  confirm_max_shift_px: 1.5      # ... with that band's light centred within 1.5 px of the detection,
+  confirm_max_shift_frac: 0.5    # or within 0.5 x the equivalent radius for large galaxies
+  cr_pixel_nsigma: 5.0           # a cutout pixel is a cosmic-ray hit if it is > 5 sigma above ...
+  cr_pixel_ratio: 4.0            # ... AND > 4 x what every other band predicts from the source colour
+  cr_mask_grow_px: 0             # extra growth of the masked area (each hit is already grown by 1 px)
+  mag_min_snr: 2.0               # mag_<band> (and colours) only where the band detects the source at S/N >= 2
+  max_sources_per_pointing: 8000 # confirmed (real) sources: brightest kept if more are detected
+  max_cr_candidates_per_pointing: 1000   # cosmic-ray candidates kept (as Noise), capped separately
+  cutout_size: 128
+  cutout_pixscale_arcsec: auto   # auto = detection band's pixel scale
+  min_valid_fraction: 0.90
+  core_radius_px: 16
+
+# ---------------------------------------------------------------- Stage 1d
+psf_match:
+  stamp: 25
+  min_stars: 5
+  max_stars: 40
+  star_min_snr: 50
+  star_max_ellipticity: 0.3  # drizzled ACS stars measure up to ~0.23 in a single exposure
+  star_isolation_px: 5       # no other segment this close to a PSF star's centre (further out: masked)
+  star_min_snr_per_band: 30  # a star shapes a band's PSF only if it has S/N >= 30 in that band
+  require_stars: true        # stop when no PSF star passes the cuts (false = continue with the Gaussian fallback)
+  fallback_fwhm_arcsec: {ACS: 0.10, WFC3_UVIS: 0.08, WFC3_IR: 0.15, default: 0.10}  # approximate
+  kernel: gaussian           # gaussian (robust default) | photutils (Fourier ratio, needs clean PSFs)
+  window: 0.35               # photutils TopHatWindow beta (kernel: photutils only)
+
+# ---------------------------------------------------------------- Stage 1e / 5b
+morphology:
+  min_snr: 3.0               # fainter sources get NaN morphology + flag 4
+  sersic_maxiter: 500
+  sersic_n_bounds: [0.05, 8.0]   # a fit ending at or beyond these limits gets flag_sersic = 1
+  sersic_rhalf_max_px: 64        # ... and so does r_half beyond half the 128-px cutout
+  pass2_mode: psf_fit        # psf_fit = statmorph Sersic fit convolved with the ePSF
+                             # deconvolve = Richardson-Lucy deconvolution, then statmorph
+  rl_iterations: 10
+
+# ---------------------------------------------------------------- Stage 2a-2e
+representation:
+  latent_dim: 64
+  epochs: 15                 # minimum epochs ...
+  min_steps: 1500            # ... and at least this many optimisation steps (few cutouts -> more epochs)
+  batch_size: 64
+  n_pca: 4                   # MAXIMUM number of CAE-latent principal components for the clustering space
+  pca_min_variance: 0.02     # ...and drop any of them explaining < 2% of the latent variance (see pca_scree.png)
+  spatial_weight: 0.5        # weight of the image block vs the physical block
+  tabular_features: [fwhm_over_psf, band_consistency, gini, m20, concentration, asymmetry, smoothness,
+                     sersic_n, r_half, ellipticity, mag, snr, colour_1, colour_2]
+clustering:
+  k_min: 2
+  k_max: 14
+  covariance_type: diag            # diag | full (full needs many more objects per component)
+  hdbscan_min_cluster_size: auto   # auto = max(10, n_train // 50)
+  hdbscan_min_samples: 5
+baseline:
+  point_source_tolerance: 0.2     # |FWHM / stellar-locus FWHM - 1| <= this -> stellar locus
+  star_locus_min_snr: 150          # size separates stars from compact galaxies only above this S/N
+                                   # (GOODS-S single exposures: ~ mag 22.3; check stage2d size_magnitude.png)
+  class_star_threshold: 0.5
+  noise_snr_max: 3.0
+  sub_psf_factor: 0.7              # FWHM below 0.7 x the stellar locus -> sharper than the PSF
+  single_band_max: 0.05            # only used if sources.csv has no cr_candidate column (older runs)
+semantic_audit:
+  gaia_radius_arcsec: 0.5
+  gzh_radius_arcsec: 0.5
+  gaia_mag_limit: 21.0             # compared with the detection-band AB magnitude (approximate)
+  montage_n: 25
+gating:
+  physical_gate: true              # object-level checks a cluster name must not contradict (Stage 2e docstring)
+  transitional_p: 0.80
+  outlier_max_p: 0.50
+  recon_percentile: 99.0
+
+# ---------------------------------------------------------------- Catalogues
+catalogs:
+  gzh:
+    file: auto                     # auto = first file in data/catalogs matching *gz_hubble* or *gzh*
+    match_radius_arcsec: 0.5
+    estimate_offset: true          # remove the median astrometric offset before matching
+    columns:                       # exact Galaxy Zoo: Hubble (Willett et al. 2017) names
+      ra: RA
+      dec: DEC
+      smooth: t01_smooth_or_features_a01_smooth_debiased_fraction
+      features: t01_smooth_or_features_a02_features_or_disk_debiased_fraction
+      artifact: t01_smooth_or_features_a03_star_or_artifact_weighted_fraction
+      edgeon: t02_edgeon_a01_yes_weighted_fraction
+      spiral: t04_spiral_a01_spiral_weighted_fraction
+      odd: t06_odd_a01_yes_weighted_fraction
+      odd_irregular: t08_odd_feature_a04_irregular_weighted_fraction
+      odd_disturbed: t08_odd_feature_a03_disturbed_weighted_fraction
+      odd_merger: t08_odd_feature_a06_merger_weighted_fraction
+      clumpy: t12_clumpy_a01_yes_weighted_fraction
+    thresholds: {smooth: 0.6, features: 0.5, edgeon: 0.5, spiral: 0.5, irregular: 0.5,
+                 odd: 0.4, merger: 0.5}
+    boundary_agreement: 0.5
+  gaia:
+    file: auto                     # auto = *gaia* in data/catalogs (e.g. gaia_dr3.csv); or query online (below)
+    query_online: false            # true = astroquery Gaia cone search per pointing
+    columns: {source_id: source_id, ra: ra, dec: dec, parallax: parallax, pmra: pmra,
+              pmdec: pmdec, g_mag: phot_g_mean_mag, teff: teff_gspphot}
+    epoch: 2016.0
+  candels:
+    file: auto                     # auto = *kartaltepe* / *candels* / *k15* in data/catalogs (e.g. candels_k15.csv)
+    columns:                       # Kartaltepe et al. (2015) FRACTIONAL table = VizieR J/ApJS/221/11/table3.
+                                   # Lists = alternative names (VizieR web / TAP / astroquery spell them differently).
+                                   # The five class fractions are REQUIRED. Check: python tools/check_catalog_columns.py
+      ra: [RAJ2000, _RAJ2000, RA, ra]
+      dec: [DEJ2000, _DEJ2000, DEC, dec]
+      spheroid: ["f(Sph)", f_Sph_, fSph, f_spheroid]
+      disk: ["f(Dk)", f_Dk_, fDk, f_disk]
+      irregular: ["f(Ir)", f_Ir_, fIr, f_irr]
+      point_source: ["f(PS)", f_PS_, fPS, f_ps]
+      unclassifiable: ["f(UnCl)", f_UnCl_, fUnCl, f_unc]
+      merger: ["f(M)", f_M_, fM, f_merger]
+      n_classifiers: [NCl, Ncl, n_classifiers]   # used to keep the deepest row when a galaxy appears twice
+
+# ---------------------------------------------------------------- Stage 4
+supervised:
+  pretrained: false          # true = ImageNet weights (needs internet the first time)
+  epochs: 15
+  batch_size: 32
+  lr: 0.001
+  weight_decay: 0.0001
+  focal_gamma: 2.0
+  merger_weight: 0.5
+  tabular_only_epochs: 40
+  ensemble_weights: [1.0, 1.0, 1.0]   # dual-branch, EfficientNet, XGBoost
+
+# ---------------------------------------------------------------- Stage 8
+catalogue:
+  designation_prefix: "P2P J"
+  dedup_radius_arcsec: 0.2

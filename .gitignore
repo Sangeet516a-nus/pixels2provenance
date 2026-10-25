@@ -1,0 +1,13 @@
+__pycache__/
+*.pyc
+.venv/
+venv/
+outputs/
+outputs_demo/
+data/raw/*
+!data/raw/README.md
+data/catalogs/*
+!data/catalogs/README.md
+data_demo/
+config_demo.yaml
+.ipynb_checkpoints/
