@@ -31,12 +31,14 @@ In VS Code pick the `.venv` interpreter (Ctrl/Cmd+Shift+P → *Python: Select In
 
 1. **Images** → `data/raw/`. For each pointing, the same field in 2–3 filters:
    ```bash
-   python tools/download_mast.py --ra 53.12 --dec -27.80 --radius 0.03 --filters F435W F606W F814W
+python tools/get_fits.py --out <folder> --target <RA>,<Dec>,<name> [--instrument <instrument>] [--filters <f1> <f2> <f3>] [--gaia] [--list] [--allow-single]
    ```
    or download by hand from the [MAST Portal](https://mast.stsci.edu) (HST, calibration level 3, DRC).
    Check a file with `python tools/inspect_fits.py data/raw/<file>_drc.fits`.
    Choose a field that **Galaxy Zoo: Hubble covers** (AEGIS, COSMOS, GEMS, GOODS-N, GOODS-S).
    COSMOS has HST imaging in F814W only — the pipeline then runs with one band.
+
+
 2. **Catalogues** → `data/catalogs/` (see `data/catalogs/README.md`):
    * GZH Table 4: `gz_hubble_main.csv.gz` from
      https://zooniverse-data.s3.amazonaws.com/galaxy-zoo-hubble/gz_hubble_main.csv.gz (required)
