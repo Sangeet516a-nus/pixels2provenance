@@ -34,6 +34,22 @@ def find_catalog(ctx: Ctx, kind: str) -> Path | None:
     return None
 
 
+def find_catalogs(ctx: Ctx, kind: str) -> list[Path]:
+    """Every matching file (Gaia: one cone per pointing when several fields are processed together)."""
+    spec = ctx.cfg["catalogs"][kind].get("file", "auto")
+    if spec and spec != "auto":
+        p = find_catalog(ctx, kind)
+        return [p] if p else []
+    if not ctx.catalogs.exists():
+        return []
+    for pat in PATTERNS[kind]:
+        hits = sorted(ctx.catalogs.glob(pat)) + sorted(ctx.catalogs.glob(f"*/{pat}"))
+        hits = [h for h in hits if h.is_file() and h.suffix.lower() in (".csv", ".gz", ".fits", ".fit", ".vot", ".xml", ".tsv")]
+        if hits:
+            return hits
+    return []
+
+
 def _candidates(col) -> list[str]:
     """A mapping value may be one column name or a list of alternatives (first one found wins)."""
     return [str(c) for c in col] if isinstance(col, (list, tuple)) else [str(col)]
@@ -162,10 +178,16 @@ def load_gzh(ctx: Ctx, metas, required=True) -> pd.DataFrame | None:
 # ---------------------------------------------------------------- Gaia
 def load_gaia(ctx: Ctx, metas) -> pd.DataFrame | None:
     cfg = ctx.cfg["catalogs"]["gaia"]
-    path = find_catalog(ctx, "gaia")
-    if path is not None:
-        df = standardise(read_mapped(path, cfg["columns"]), cfg["columns"], "gaia")
-        return cut_to_box(df, sky_box(metas))
+    paths = find_catalogs(ctx, "gaia")
+    if paths:
+        df = pd.concat([standardise(read_mapped(p, cfg["columns"]), cfg["columns"], "gaia") for p in paths],
+                       ignore_index=True)
+        if "source_id" in df:
+            df = df.drop_duplicates("source_id").reset_index(drop=True)
+        df = cut_to_box(df, sky_box(metas))
+        if df.empty and cfg.get("query_online"):
+            return query_gaia_online(ctx, metas)
+        return df
     if cfg.get("query_online"):
         return query_gaia_online(ctx, metas)
     return None

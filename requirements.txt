@@ -14,3 +14,6 @@ xgboost>=2.0
 torch>=2.1              # CPU build is enough; CUDA / Apple MPS are used automatically if present
 torchvision>=0.16
 astroquery>=0.4.7       # only for downloading from MAST / querying Gaia online
+# --- optional: the field runner UI ---
+streamlit>=1.40         # app.py (streamlit run app.py)
+ipywidgets>=8.0         # the field-runner panel in the notebook (Colab has it already)

@@ -3,9 +3,10 @@
 Purpose : do not throw away real galaxies that sit between populations, and do
           not silently drop true anomalies either.
 Method  : GMM components are summed into Star / Galaxy / Noise posteriors using
-          the Stage-2d names. An object that HDBSCAN calls noise (-1) but whose
+          the Stage-2d names. An object in a LOW-DENSITY region (HDBSCAN noise -1, or a
+          GLOSH outlier score above the train percentile - Stage 2b density_outlier) but whose
           galaxy posterior is >= 0.80 is KEPT as a galaxy and tagged
-          is_transitional. An HDBSCAN-noise object with no posterior above 0.50
+          is_transitional. A low-density object with no posterior above 0.50
           AND a CAE reconstruction error above the 99th percentile of the train
           split is an extreme outlier -> anomaly_log.csv (anomaly_flag = 1).
           Physical consistency gate (gating.physical_gate): a GMM cluster is
@@ -91,7 +92,13 @@ def run(ctx: Ctx):
     if not hdb_ok:
         ctx.log.info("[Stage 2e] WARNING: HDBSCAN failed (Stage 2b) - is_transitional left empty; the outlier "
                      "rule uses GMM posterior + reconstruction error only.")
-    hnoise = (hdb == -1) if hdb_ok else np.ones(len(df), bool)
+    if hdb_ok and "density_outlier" in df:
+        # HDBSCAN noise OR a GLOSH outlier score above the train percentile (Stage 2b): in a deep field the
+        # sources form one density continuum, so label -1 alone would mark almost nothing
+        hnoise = as_bool(df.density_outlier).to_numpy()
+    else:
+        hnoise = (hdb == -1) if hdb_ok else np.ones(len(df), bool)
+    ctx.log.info(f"[Stage 2e] low-density objects (HDBSCAN noise / GLOSH outliers): {int(hnoise.sum())}")
     P = np.column_stack([post[n] for n in NAMES])
     thr = float(np.nanpercentile(err[(df.split_tag == "train").to_numpy()], cfg["recon_percentile"]))
     transitional = hnoise & (post["Galaxy"] >= cfg["transitional_p"]) if hdb_ok else np.zeros(len(df), bool)
@@ -100,7 +107,7 @@ def run(ctx: Ctx):
     sem = df.cluster_semantic_2d.to_numpy(object).copy()
     sem[transitional] = "Galaxy"
     override = np.full(len(df), None, dtype=object)
-    override[transitional] = "transitional (HDBSCAN noise, GMM galaxy posterior >= transitional_p)"
+    override[transitional] = "transitional (low density in HDBSCAN, GMM galaxy posterior >= transitional_p)"
     if cfg.get("physical_gate", True):
         sem, override = physical_gate(df, sem, override, ctx.cfg["baseline"])
         ctx.log.info(f"[Stage 2e] physical gate: {pd.Series(override).value_counts().to_dict()}")
@@ -112,7 +119,7 @@ def run(ctx: Ctx):
     res.to_csv(out / "segregation.csv", index=False)
     log = res[res.anomaly_flag == 1].merge(df[["object_id", "ra", "dec", "pointing", "cluster_id_gmm",
                                                "cluster_id_hdbscan"]], on="object_id")
-    log["reason"] = "HDBSCAN noise + no GMM population > 0.5 + reconstruction error above train 99th pct"
+    log["reason"] = "low density (HDBSCAN noise / GLOSH) + no GMM population > 0.5 + reconstruction error above train 99th pct"
     log.to_csv(out / "anomaly_log.csv", index=False)
     ctx.log.info(f"[Stage 2e] populations {res.cluster_semantic.value_counts().to_dict()} | transitional kept "
                  f"{int(transitional.sum())} | anomalies logged {int(anomaly.sum())} (recon threshold {thr:.5f})")

@@ -3,7 +3,7 @@
 Purpose : one deliverable that a scientist can filter with a single column.
 Method  : all tracks (Star, Galaxy, Noise; GZH and external pointings) are merged
           into one row per detected source. Every galaxy gets calibrated class
-          probabilities and a merger probability from the frozen ensemble.
+          probabilities and a merger probability from the frozen fusion model (Stage 4b XGBoost + 4c calibration).
           Duplicates from overlapping pointings (closer than 0.2") are merged,
           keeping the higher-SNR detection. Each row gets an IAU-style
           designation (truncated coordinates, a letter appended when two would
@@ -31,8 +31,7 @@ import pandas as pd
 from scipy.spatial import cKDTree
 
 from ..context import Ctx, load_json, load_objects, save_json
-from ..features import TabularPrep, load_cutouts, make_tensors
-from ..inference import calibrated_predict, load_models
+from ..inference import predict_galaxies
 from ..nets import MORPH_CLASSES
 from ..catalogs import load_candels
 from ..utils import as_bool, fwhm_fit, iau_designation, match_with_offset, predictive_entropy, unit_vectors
@@ -70,7 +69,7 @@ COLUMNS = [
     ("p_irregular", "classification", "Galaxy (anomaly_flag 0)", "calibrated probability Irregular"),  # C24
     ("p_ambiguous", "classification", "Galaxy (anomaly_flag 0)", "calibrated probability Ambiguous"),  # C25
     ("pred_entropy", "classification", "Galaxy (anomaly_flag 0)", "predictive entropy of the class probabilities"),  # C26
-    ("p_merger", "classification", "Galaxy (anomaly_flag 0)", "calibrated merger probability (dual-branch model)"),  # C27
+    ("p_merger", "classification", "Galaxy (anomaly_flag 0)", "calibrated merger probability (merger XGBoost on the fused features)"),  # C27
     ("star_fwhm_arcsec", "psf_calibration", "Star", "this star's FWHM, 2-D Gaussian fit, detection band [arcsec]"),  # C28
     ("used_in_psf_match", "psf_calibration", "Star", "star used for the per-band PSFs in cross-filter matching (Stage 1d)"),  # C29
     ("used_in_epsf", "psf_calibration", "Star", "star stacked into the empirical PSF (Stage 5a)"),  # C30
@@ -191,17 +190,10 @@ def run(ctx: Ctx):
 
     # ---- calibrated predictions for every galaxy row ----
     gal = (df.cluster_semantic == "Galaxy") & (df.anomaly_flag == 0)
-    models = load_models(ctx)
-    prep = TabularPrep.load(ctx.require("4a", "tab_prep.joblib"))
-    cut = load_cutouts(ctx)
-    P, M = [], []
     gidx = df.index[gal]
-    for i in range(0, len(gidx), 256):
-        r = calibrated_predict(ctx, make_tensors(df.loc[gidx[i:i + 256]], cut, prep, with_labels=False), models)
-        P.append(r["morph"])
-        M.append(r["merger"])
     if len(gidx):
-        P, M = np.concatenate(P), np.concatenate(M)
+        r = predict_galaxies(ctx, df.loc[gidx])          # fusion XGBoost + calibration, all galaxies at once
+        P, M = r["morph"], r["merger"]
         for k, c in enumerate(PCOLS):
             df.loc[gal, c] = P[:, k]
         df.loc[gal, "pred_class"] = np.array(MORPH_CLASSES)[P.argmax(1)]

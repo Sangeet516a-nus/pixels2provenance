@@ -38,17 +38,18 @@ STAGES = [
     ("3c", "stage3c_noise_model",     "stage3c_noise_model",     "Noise false-positive model"),
     ("5a", "stage5a_empirical_psf",   "stage5a_empirical_psf",   "Empirical PSF construction"),
     ("5b", "stage5b_pass2_refinement", "stage5b_pass2_refinement", "Pass-2 morphology refinement"),
-    ("4a", "stage4a_dual_branch",     "stage4a_dual_branch",     "Dual-branch multi-task training"),
-    ("4b", "stage4b_ensemble",        "stage4b_ensemble",        "Ensemble consensus"),
+    ("4a", "stage4a_cnn_features",    "stage4a_cnn_features",    "CNN features (ResNet-18 + EfficientNet-B0)"),
+    ("4b", "stage4b_xgboost_fusion",  "stage4b_xgboost_fusion",  "Ensemble (feature fusion) + XGBoost"),
     ("4c", "stage4c_calibration",     "stage4c_calibration",     "Probability calibration"),
     ("4d", "stage4d_ablation",        "stage4d_ablation",        "Controlled ablation"),
     ("6a", "stage6a_test_eval",       "stage6a_test_eval",       "In-domain test (run once)"),
     ("6b", "stage6b_uncertainty",     "stage6b_uncertainty",     "Uncertainty audit"),
-    ("6c", "stage6c_xai",             "stage6c_xai",             "Explainable AI (Grad-CAM, SHAP)"),
+    ("6c", "stage6c_xai",             "stage6c_xai",             "Explainable AI (SHAP)"),
     ("7a", "stage7a_taxonomy",        "stage7a_taxonomy",        "Taxonomy alignment + ceiling"),
     ("7b", "stage7b_crosscat",        "stage7b_crosscat",        "Cross-catalogue evaluation"),
     ("7c", "stage7c_generalisation",  "stage7c_generalisation",  "Generalisation disentanglement"),
     ("8",  "stage8_catalogue",        "stage8_catalogue",        "Unified catalogue (catalog.csv)"),
+    ("9",  "stage9_galaxy_atlas",     "stage9_galaxy_atlas",     "Galaxy image atlas (PNG + zip)"),
 ]
 STAGE_DIR = {k: d for k, _, d, _ in STAGES}
 
@@ -184,8 +185,8 @@ def load_objects(ctx: Ctx, parts) -> pd.DataFrame:
         rows = df["_has"] == "both"
         for c in overlap:
             df.loc[rows, c] = df.loc[rows, c + "__new"]
-            df = df.drop(columns=c + "__new")
-        df = df.drop(columns="_has")
+        # drop the helper columns in one go and de-fragment (avoids pandas' PerformanceWarning)
+        df = df.drop(columns=[c + "__new" for c in overlap] + ["_has"]).copy()
     return df
 
 

@@ -1,4 +1,4 @@
-"""Tabular pre-processing (fit on TRAIN only) and model-ready tensors."""
+"""Tabular pre-processing, the ImageNet input of the frozen CNNs, and the galaxy / label tables."""
 from __future__ import annotations
 
 import joblib
@@ -7,7 +7,7 @@ import pandas as pd
 from sklearn.impute import SimpleImputer
 from sklearn.preprocessing import RobustScaler
 
-from .utils import asinh_stack, signed_log1p
+from .utils import signed_log1p
 
 
 class TabularPrep:
@@ -46,21 +46,35 @@ def load_cutouts(ctx):
     return np.load(ctx.require("1d", "cutouts.npy"), mmap_mode="r")
 
 
-def image_tensor(cutouts, index):
-    import torch
-    batch = np.asarray(cutouts[np.asarray(index, int)], dtype=np.float32)
-    return torch.tensor(asinh_stack(batch))
+IMAGENET_MEAN = np.array([0.485, 0.456, 0.406], np.float32)[:, None, None]
+IMAGENET_STD = np.array([0.229, 0.224, 0.225], np.float32)[:, None, None]
 
 
-def make_tensors(df: pd.DataFrame, cutouts, prep: TabularPrep, with_labels=True):
+def imagenet_input(cubes, size=224, q_lo=1.0, q_hi=99.5, soft=0.1):
+    """PSF-matched cutouts (N, 3, 128, 128), bands blue -> red, in e-/s -> ImageNet-ready tensor (N, 3, size, size).
+      1. one asinh stretch per cutout, the SAME for all three bands (percentiles of all its pixels), so the colour
+         of the galaxy survives (a separate stretch per band would make every galaxy grey);
+      2. channels R, G, B = reddest, middle, bluest band (F775W, F606W, F435W); a band without data stays 0;
+      3. ImageNet mean / std per channel (the statistics the frozen BatchNorm layers expect);
+      4. bilinear resize to size x size (224 = the image size the networks were trained on)."""
     import torch
-    d = {"img": image_tensor(cutouts, df["cutout_index"].to_numpy()),
-         "tab": torch.tensor(prep.transform(df)),
-         "object_id": df["object_id"].to_numpy()}
-    if with_labels and "gz_label_id" in df and df["gz_label_id"].notna().all():
-        d["y"] = torch.tensor(df["gz_label_id"].astype(int).to_numpy())
-        d["ym"] = torch.tensor(df["gz_merger_flag"].fillna(0).astype(float).to_numpy(), dtype=torch.float32)
-    return d
+    import torch.nn.functional as F
+    x = np.nan_to_num(np.asarray(cubes, np.float32))[:, ::-1]                 # blue->red  ->  R, G, B
+    out = np.empty_like(x)
+    for n in range(len(x)):
+        lo, hi = np.percentile(x[n], [q_lo, q_hi])
+        v = np.clip((x[n] - lo) / max(hi - lo, 1e-8), 0, 1)
+        out[n] = np.arcsinh(v / soft) / np.arcsinh(1.0 / soft)
+    t = torch.from_numpy((out - IMAGENET_MEAN) / IMAGENET_STD)
+    if size != t.shape[-1]:
+        t = F.interpolate(t, size=(size, size), mode="bilinear", align_corners=False)
+    return t
+
+
+def physical_matrix(df, columns):
+    """The 14 physical (Pass-2) features as they are: trees need no scaling, and NaN (not measurable) is
+    handled natively by XGBoost."""
+    return df.reindex(columns=list(columns)).apply(pd.to_numeric, errors="coerce").to_numpy(np.float32)
 
 
 def galaxy_table(ctx):
@@ -82,6 +96,18 @@ def supervised_splits(ctx):
     if ctx.cfg["frame_qc"].get("exclude_flagged"):
         lab = lab[lab.frame_quality_flag == 1]
     lab = lab.assign(gz_label_id=lab.gz_label_id.astype(int))
+    from .modes import is_apply
+    if is_apply(ctx):
+        # the frozen model never saw this field: EVERY labelled galaxy (any split, buffer too) is test data
+        from .context import StageSkipped
+        allg = df[~df.is_pseudo_label & ~df.edge_flag]
+        if ctx.cfg["frame_qc"].get("exclude_flagged"):
+            allg = allg[allg.frame_quality_flag == 1]
+        if allg.empty:
+            raise StageSkipped("apply mode: no GZH-labelled galaxies in this field, so no in-field evaluation "
+                               "(every galaxy is still classified in Stage 8)")
+        allg = allg.assign(gz_label_id=allg.gz_label_id.astype(int)).reset_index(drop=True)
+        return {"train": allg.iloc[0:0], "dev": allg.iloc[0:0], "test": allg}
     splits = {s: lab[lab.split_tag == s].reset_index(drop=True) for s in ("train", "dev", "test")}
     empty = [s for s, v in splits.items() if len(v) == 0]
     if empty:

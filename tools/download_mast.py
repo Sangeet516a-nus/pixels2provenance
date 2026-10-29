@@ -1,57 +1,45 @@
 #!/usr/bin/env python
-"""Download Level-3 HST _drc products from MAST into data/raw (needs internet).
+"""Download the best Level-3 HST _drc products for a sky position from MAST into data/raw (needs internet).
 
-    python tools/download_mast.py --ra 53.12 --dec -27.80 --radius 0.03 \
-        --instrument ACS/WFC --filters F435W F606W F814W
+    python tools/download_mast.py --ra 53.12 --dec -27.80 --dry-run          # show what would be downloaded
+    python tools/download_mast.py --ra 53.12 --dec -27.80                    # one file per colour (auto filters)
+    python tools/download_mast.py --ra 53.12 --dec -27.80 --filters F435W F606W F814W
 
-One file per filter is kept (the smallest that covers the position), so the
-three bands of one pointing arrive together. Files are typically 150-300 MB each.
+Per filter, the file must CONTAIN the position; combined products (several exposures, cosmic rays rejected)
+are preferred over single exposures, then the longest exposure. The other bands prefer files that overlap the
+red (detection) band's file, so all bands form one pointing. See src/p2p/archive.py.
+To search, download AND run the pipeline in one go, use tools/run_field.py or the app (streamlit run app.py).
 """
 from __future__ import annotations
 
 import argparse
+import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT / "src"))
 
 
 def main():
-    ap = argparse.ArgumentParser()
+    ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--ra", type=float, required=True)
     ap.add_argument("--dec", type=float, required=True)
-    ap.add_argument("--radius", type=float, default=0.03, help="degrees")
-    ap.add_argument("--instrument", default="ACS/WFC")
-    ap.add_argument("--filters", nargs="+", default=["F435W", "F606W", "F814W"])
+    ap.add_argument("--radius", type=float, default=0.03, help="search radius in degrees")
+    ap.add_argument("--instrument", default="ACS/WFC", help="ACS/WFC | WFC3/UVIS | WFC3/IR")
+    ap.add_argument("--filters", nargs="+", default=["auto"], help="'auto' = one per colour, or a list e.g. F435W F606W F814W")
+    ap.add_argument("--single-ok", action="store_true", default=True, help=argparse.SUPPRESS)
+    ap.add_argument("--combined-only", action="store_true", help="never take single-exposure files")
     ap.add_argument("--out", default=str(ROOT / "data" / "raw"))
     ap.add_argument("--dry-run", action="store_true", help="list what would be downloaded")
     a = ap.parse_args()
-    from astroquery.mast import Observations
-    obs = Observations.query_criteria(coordinates=f"{a.ra} {a.dec}", radius=f"{a.radius} deg",
-                                      obs_collection="HST", dataproduct_type="image", calib_level=3,
-                                      instrument_name=a.instrument, filters=a.filters)
-    print(f"{len(obs)} observations found")
-    if len(obs) == 0:
+    from p2p import archive
+    filters = "auto" if a.filters == ["auto"] else [f.upper() for f in a.filters]
+    ch = archive.search(a.ra, a.dec, filters, a.instrument, a.radius, allow_single=not a.combined_only)
+    if not ch:
+        print("nothing found that covers this position")
         return
-    prods = Observations.filter_products(Observations.get_product_list(obs), productType="SCIENCE",
-                                         productSubGroupDescription="DRC", extension="fits")
-    prods.sort("size")
-    chosen, seen = [], set()
-    for i, row in enumerate(prods):
-        name = str(row["productFilename"]).lower()
-        f = next((x for x in a.filters if x.lower() in name), None)
-        if f and f not in seen:
-            seen.add(f)
-            chosen.append(i)
-    if not chosen:          # names without the filter in them: take the first per obs_id
-        chosen = list(range(min(len(prods), len(a.filters))))
-    sel = prods[chosen]
-    for r in sel:
-        print(f"  {r['productFilename']}  {int(r['size']) / 1e6:.0f} MB")
-    if a.dry_run:
-        return
-    Path(a.out).mkdir(parents=True, exist_ok=True)
-    man = Observations.download_products(sel, download_dir=a.out, flat=True)
-    print(man["Local Path", "Status"])
+    if not a.dry_run:
+        archive.download(ch, a.out)
 
 
 if __name__ == "__main__":

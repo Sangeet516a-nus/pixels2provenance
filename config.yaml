@@ -22,8 +22,24 @@ partition:
                              # a single ACS pointing is only ~3.4' wide: 0.1' = 6" keeps stripes usable)
   fractions: {train: 0.70, dev: 0.15, test: 0.15}
   min_pointings_for_whole_assignment: 3   # fewer pointings -> split each pointing into stripes
-  external_patterns: []      # filename / TARGNAME substrings that mark CANDELS (external) pointings,
-                             # e.g. ["EGS", "egs"]. Everything else is GZH train/dev/test.
+  external_patterns: ["j8e611", "j8e688", "j8dna3", "j8dnb8"]
+                             # file-name / TARGNAME substrings of the WHOLLY external pointings (never trained on;
+                             # Stage 1a role). Must list exactly the pointings with split: external below (a pointing
+                             # with an external STRIPE, like GOODS-S, is not listed here).
+  pointing_splits:           # Sangeeta's plan (28 Oct, 16:44). Empty list [] = automatic 70/15/15 assignment.
+    # match = file-name substrings of the pointing's three files; split = whole pointing, or stripes (in the order
+    # given, along the pointing's longer axis; a collar separates neighbouring stripes) holding the given share of
+    # the pointing's GZH galaxies (stripe_share below)
+    - {name: GOODS-S,   match: [jb5x],           stripes: {train: 0.25, dev: 0.50, external: 0.25}}
+    - {name: GOODS-S-2, match: [j8mt],           stripes: {test: 0.80, dev: 0.20}}
+    - {name: GOODS-S-3, match: [j8e606, j8e621], split: train}
+    - {name: GOODS-S-4, match: [j8e611, j8e688], split: external}   # Phase 7 (Kartaltepe human labels)
+    - {name: GOODS-N-1, match: [j8dna1, j8dnh8], split: train}
+    - {name: GOODS-N-2, match: [j8dna3, j8dnb8], split: external}   # held-out field (GZH labels, no Kartaltepe)
+    - {name: GOODS-N-3, match: [j8dna0, j8dnb5], stripes: {train: 0.50, dev: 0.50}}
+    - {name: GOODS-N-4, match: [j8dna4, j8dnb9], split: test}
+  stripe_share: gzh_galaxies  # gzh_galaxies = stripe sizes by share of the pointing's GZH galaxies (positions only)
+                             # | data_area = by share of the area with data (the 70/15/15 single-pointing rule)
   phase7_region: auto        # auto = external pointings if any, else the held-out TEST split
                              # (one field: Phase 7 is evaluated on galaxies never trained on) | external | test
   manual_regions: []         # used when mode: manual, e.g.
@@ -38,11 +54,6 @@ acquisition:
   bands: auto                # auto | list such as [F435W, F606W, F814W] (blue -> red)
   max_bands: 3
   detection_band: auto       # auto = reddest band in each pointing
-  download:                  # optional: fetch files from MAST (needs internet + astroquery)
-    enabled: false
-    targets:
-      - {ra: 53.12, dec: -27.80, radius_deg: 0.03, instrument: "ACS/WFC", filters: [F435W, F606W, F814W]}
-    max_files_per_target: 3
 
 # ---------------------------------------------------------------- Stage 1b
 frame_qc:
@@ -51,9 +62,26 @@ frame_qc:
   score_stride: 64           # 50% overlap so artefacts on a tile edge are not split
   min_tile_coverage: 0.9
   max_train_tiles: 4000
+  qc_version: 2              # 2 = early stopping on validation tiles + GroupNorm CAE; 1 = original (fixed steps)
   latent_dim: 128
-  epochs: 8                  # minimum epochs ...
-  min_steps: 1000            # ... and at least this many optimisation steps
+  channels: [16, 32, 64, 64] # conv channels of the 4 encoder blocks (v2)
+  max_epochs: 120            # v2: upper limit (150 until 2026-10-30; the 28 Oct run was within ~2 % of its best by ~120);
+                             # earlier stop only if ...
+  min_epochs: 20
+  patience: 10               # ... when the validation-tile loss has not improved ...
+  min_delta: 0.005           # ... by at least 0.5 % (relative) for this many epochs; the epoch with the
+                             # lowest validation loss is kept
+  min_gain_vs_flat: 0.02     # never stop early while the model is < 2 % better than a flat tile (plateau)
+  lr: 0.001
+  lr_patience: 4             # halve the learning rate after this many epochs without improvement (< patience)
+  augment: true              # random 90-degree rotations and flips while training
+  train_splits: [train, dev] # Stage 0 sky the QC model may fit / stop / calibrate on (test + external: scored only)
+  split_cell_arcsec: 30      # fit / validation / calibration tiles are split by whole sky cells of this size,
+                             # so the same sky in another band never sits on both sides (a tile is 6.4")
+  val_fraction: 0.1          # share of the tiles that decides when training stops (v2)
+  cal_fraction: 0.2          # share of the tiles that sets the threshold (never trained on)
+  epochs: 8                  # v1 only: minimum epochs ...
+  min_steps: 1000            # ... v1 only: and at least this many optimisation steps
   batch_size: 64
   threshold_percentile: 99.0
   exclude_flagged: false     # true = drop sources in flagged tiles from training. Default false:
@@ -118,21 +146,45 @@ morphology:
 
 # ---------------------------------------------------------------- Stage 2a-2e
 representation:
-  latent_dim: 64
-  epochs: 15                 # minimum epochs ...
-  min_steps: 1500            # ... and at least this many optimisation steps (few cutouts -> more epochs)
+  cae_version: 2             # 2 = improved CAE (below); 1 = the original CAE (per-cutout stretch, fixed steps)
+  latent_dim: 32             # CAE bottleneck size (cae_version 1 used 64)
+  channels: [16, 32, 64, 64] # conv channels of the 4 encoder blocks (128 -> 8 px)
+  band_mask_channels: true   # add a 0/1 "data present" channel per band (a band outside its footprint is not a dark source)
+  asinh_softening_sigma: 3.0 # input scale: asinh((x - local bg) / (a * band sigma)); linear below ~a sigma ...
+  asinh_max_sigma: 1000      # ... and 1.0 at this many sigma (same scale for every cutout of a pointing)
+  target_weight: 10          # loss weight of the target footprint (grown 2 px) relative to background pixels
+  ignore_cr_pixels: true     # cosmic-ray pixels found in Stage 1c (segmentation code 3) do not count in the loss
+  augment: true              # random 90-degree rotations and flips while training
+  max_epochs: 100            # upper limit; training normally stops earlier ...
+  min_epochs: 20
+  patience: 10               # ... when the validation (dev region) loss has not improved ...
+  min_delta: 0.005           # ... by at least 0.5 % (relative) for this many epochs; the best epoch's weights are kept
+  lr: 0.001
+  lr_patience: 4             # halve the learning rate after this many epochs without validation improvement
   batch_size: 64
-  n_pca: 4                   # MAXIMUM number of CAE-latent principal components for the clustering space
+  epochs: 15                 # cae_version 1 only: minimum epochs ...
+  min_steps: 1500            # ... cae_version 1 only: and at least this many optimisation steps
+  n_pca: auto                # auto = Horn's parallel analysis (components above shuffled-data eigenvalues); or a number
+  n_pca_max: 12              # cap for n_pca: auto
+  pca_parallel_iterations: 50
+  reuse_trained_cae: false   # true = load outputs/stage2a_representation/rep_cae.pt instead of retraining (PCA/fusion only)
   pca_min_variance: 0.02     # ...and drop any of them explaining < 2% of the latent variance (see pca_scree.png)
   spatial_weight: 0.5        # weight of the image block vs the physical block
   tabular_features: [fwhm_over_psf, band_consistency, gini, m20, concentration, asymmetry, smoothness,
                      sersic_n, r_half, ellipticity, mag, snr, colour_1, colour_2]
 clustering:
   k_min: 2
-  k_max: 14
-  covariance_type: diag            # diag | full (full needs many more objects per component)
+  k_max: 20                        # BIC sweep range; the chosen k must not sit on the boundary (see gmm_k_selection.png)
+  covariance_type: full            # full: the features are correlated; diag never reaches a BIC minimum here
+  reg_covar: 0.001                 # variance floor added to each component (scaled feature units)
+  n_init: 3
+  robustness_seeds: [7, 1]         # repeat the BIC sweep near the chosen k with these seeds
+  bootstrap_refits: 3              # stability (ARI) of the chosen GMM on bootstrap resamples
+  compare_diag: true               # also draw the diagonal-covariance BIC curve in the figure
   hdbscan_min_cluster_size: auto   # auto = max(10, n_train // 50)
   hdbscan_min_samples: 5
+  hdbscan_max_noise: 0.5           # ignore HDBSCAN fits that call more than half of the sources noise
+  hdbscan_outlier_percentile: 95   # GLOSH above this train percentile -> density_outlier (Stage 2e)
 baseline:
   point_source_tolerance: 0.2     # |FWHM / stellar-locus FWHM - 1| <= this -> stellar locus
   star_locus_min_snr: 150          # size separates stars from compact galaxies only above this S/N
@@ -146,6 +198,7 @@ semantic_audit:
   gzh_radius_arcsec: 0.5
   gaia_mag_limit: 21.0             # compared with the detection-band AB magnitude (approximate)
   montage_n: 25
+  min_evidence_members: 5          # a signal names a cluster only if >= this many train members carry it
 gating:
   physical_gate: true              # object-level checks a cluster name must not contradict (Stage 2e docstring)
   transitional_p: 0.80
@@ -197,17 +250,75 @@ catalogs:
 
 # ---------------------------------------------------------------- Stage 4
 supervised:
-  pretrained: false          # true = ImageNet weights (needs internet the first time)
-  epochs: 15
-  batch_size: 32
-  lr: 0.001
-  weight_decay: 0.0001
-  focal_gamma: 2.0
-  merger_weight: 0.5
-  tabular_only_epochs: 40
-  ensemble_weights: [1.0, 1.0, 1.0]   # dual-branch, EfficientNet, XGBoost
+  mode: train                # train = learn from this field's GZH labels | apply = use a frozen model bundle
+                             # (fields without Galaxy Zoo: Hubble labels; tools/run_field.py chooses automatically)
+  model_bundle: null         # apply mode: folder written by tools/export_model.py, e.g. models/goods_2026-10-30
+  # ---- Stage 4a: frozen ImageNet feature extractors (no CNN is trained) ----
+  pretrained: true           # ImageNet weights for ResNet-18 and EfficientNet-B0 (downloaded once, ~66 MB)
+  input_size: 224            # cutouts (128 px) are resized to this before the CNNs (ImageNet training size)
+  feature_batch_size: 64
+  # ---- Stage 4b: ENSEMBLE (feature fusion) + XGBoost ----
+  cv_folds: 5
+  cv_group_arcsec: 30        # galaxies in the same 30" sky cell stay in the same fold
+  selection_metric: log_loss # number of trees / block weights chosen by minimum out-of-fold log-loss (or macro_f1)
+  xgb_max_trees: 400         # trees per class chosen from 10, 25, 50, ... this
+  fusion_block_weights:      # ENSEMBLE weights [w1 ResNet-18, w2 EfficientNet-B0, w3 physical]: the share of the
+                             # features each tree may draw from each block; the best set is chosen by 5-fold CV
+    - [0.333, 0.333, 0.334]  # equal
+    - [0.284, 0.708, 0.008]  # proportional to the block sizes (512 : 1280 : 14) = no re-balancing
+    - [0.40, 0.40, 0.20]     # image-heavy
+    - [0.25, 0.25, 0.50]     # physics-heavy
+    - [0.50, 0.25, 0.25]     # ResNet-heavy
+    - [0.25, 0.50, 0.25]     # EfficientNet-heavy
+  xgboost:                   # the "compile" step of XGBoost (p2p/xgb_worker.py has the same defaults)
+    max_depth: 4             # shallow trees: ~1,100 galaxies, 1,806 features
+    min_child_weight: 2
+    learning_rate: 0.05
+    subsample: 0.8           # random 80 % of the galaxies per tree     (tree equivalent of dropout)
+    colsample_bytree: 0.3    # random 30 % of the features per tree, drawn by the ensemble block weights
+    reg_lambda: 1.0          # L2 penalty on the leaf values             (L2 weight regularisation)
+    reg_alpha: 0.0           # L1 penalty
+    tree_method: hist
+    n_jobs: 4
+  # ---- Stage 4d: ablation ----
+  ablation_input_size: 128   # the fusion is also cross-validated with features from 128 px (no resize)
+  compare_previous_ensemble: Output_beofreF1   # outputs folder of the earlier three-model ensemble run (its
+                             # out-of-fold predictions are scored on the same galaxies); null = no such row
+
+# ---------------------------------------------------------------- Stages 6-7
+evaluation:
+  test_sealed: true          # true while developing: Stages 6a-7c do NOT score the test pointing or the Phase-7
+                             # (external) pointings, so nothing can be tuned on them; all decisions use the
+                             # cross-validation of train + dev. Final run: set false, then
+                             # python run_pipeline.py --from 6a   (once; Stage 6a's ledger records every evaluation)
 
 # ---------------------------------------------------------------- Stage 8
 catalogue:
   designation_prefix: "P2P J"
   dedup_radius_arcsec: 0.2
+
+# ---------------------------------------------------------------- Stage 9
+atlas:
+  enabled: true
+  min_snr: 0                 # only image galaxies with snr >= this (0 = every galaxy)
+  max_galaxies: null         # null = all; a number keeps the most confident ones
+  clean_cosmic_rays: true    # display-only removal of sharp single-band hits (data are not changed)
+  cr_nsigma: 5.0
+  cr_ratio: 3.0              # a hit is > cr_ratio x brighter (in S/N) in its band than in every other band
+  cr_passes: 2
+  cr_suspect_fraction: 0.5   # a 'galaxy' that loses more than this share of its central light is flagged cr_suspect
+  palette_colours: 256       # PNG palette size (compression); 0 = full 24-bit colour
+  upscale: 1                 # 2 = save 256x256 instead of the native 128x128 cutout
+  soft_sigma: 2.0            # asinh softening, in units of the sky noise of the cutout border
+  top_percentile: 99.7       # brightest level shown, from the central part of the cutout ...
+  min_top_sigma: 15          # ... but at least this many sky sigmas (faint galaxies are not over-stretched)
+  keep_png_folder: true      # false = keep only galaxy_images.zip
+  gallery_n: 36              # galaxies per class gallery (most confident first)
+  gallery_columns: 6
+  overview_per_class: 6
+
+# ---------------------------------------------------------------- tools/run_field.py, app.py
+field_runner:
+  min_gzh_labels: 150        # fewer GZH galaxies than this in the field(s) -> apply mode (frozen model bundle)
+  footprint_radius_deg: 0.028   # GZH / CANDELS counted within this radius of each target (ACS/WFC ~ 0.028 deg)
+  gaia_radius_deg: 0.06      # Gaia DR3 cone per target

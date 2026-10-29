@@ -1,109 +1,85 @@
-"""Stage 6c - Explainable AI: Grad-CAM and SHAP.
+"""Stage 6c - Explainable AI: which evidence drives each prediction (exact TreeSHAP of the fusion XGBoost).
 
-Purpose : show what drives each prediction.
-Method  : Grad-CAM on the last convolutional block (layer4) of the dual-branch
-          ResNet-18, for the most confident correct test galaxy of each class;
-          exact TreeSHAP attributions from XGBoost's built-in pred_contribs
-          (mean |SHAP| per class and feature).
-Output  : gradcam_examples.png, shap_summary.csv, shap_summary.png
+Method  : XGBoost's built-in pred_contribs gives the exact SHAP value of every one of the 1,806 inputs for every
+          test galaxy and class. They are summarised (mean |SHAP| over the test galaxies)
+            * per ENSEMBLE block - how much of each class decision rests on ResNet-18 features, EfficientNet-B0
+              features and the physical features;
+            * per physical feature - which measured quantity (Gini, colour, ellipticity, ...) matters per class;
+          and the most confident correctly classified test galaxy of each class is shown as a colour cutout.
+Output  : shap_blocks.csv, shap_physical.csv, shap_summary.png, examples.png, summary.json
 """
 from __future__ import annotations
 
 import numpy as np
 import pandas as pd
-import torch
-import torch.nn.functional as F
 
-from ..context import Ctx, save_json
-from ..features import TabularPrep, load_cutouts, make_tensors, supervised_splits
-from ..inference import load_models
+from ..context import Ctx, StageSkipped, save_json
+from ..features import load_cutouts, supervised_splits
+from ..inference import BLOCKS, block_slices, load_fusion, predict_galaxies
 from ..nets import MORPH_CLASSES, N_CLASSES
 
 
-class GradCAM:
-    def __init__(self, model, layer):
-        self.model, self.acts, self.grads = model, None, None
-        self.h = [layer.register_forward_hook(lambda m, i, o: setattr(self, "acts", o)),
-                  layer.register_full_backward_hook(lambda m, gi, go: setattr(self, "grads", go[0]))]
-
-    def __call__(self, x_img, x_tab, device):
-        self.model.to(device).eval()
-        x_img, x_tab = x_img.to(device), x_tab.to(device)
-        with torch.enable_grad():
-            logits = self.model(x_img, x_tab)["morph"]
-            k = int(logits.argmax(1))
-            self.model.zero_grad()
-            logits[0, k].backward()
-        cam = F.relu((self.grads.mean(dim=(2, 3), keepdim=True) * self.acts).sum(1, keepdim=True))
-        cam = F.interpolate(cam, size=x_img.shape[-2:], mode="bilinear", align_corners=False)[0, 0]
-        cam = cam.detach().cpu().numpy()
-        return cam / (cam.max() + 1e-12), k
-
-    def remove(self):
-        for h in self.h:
-            h.remove()
-
-
 def run(ctx: Ctx):
+    from ..sealing import require_unsealed
+    require_unsealed(ctx, "6c")
     import matplotlib
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
     out = ctx.stage_dir("6c")
-    models = load_models(ctx)
+    if not ctx.path("6a", "test_predictions.csv").exists():
+        raise StageSkipped("Stage 6a has no test predictions (no labelled galaxies to evaluate)")
     pred = pd.read_csv(ctx.require("6a", "test_predictions.csv"))
-    test_df = supervised_splits(ctx)["test"]
-    data = make_tensors(test_df, load_cutouts(ctx), TabularPrep.load(ctx.require("4a", "tab_prep.joblib")))
-    P = pred[[f"p_{c}" for c in MORPH_CLASSES]].to_numpy()
-    picks = []
-    for k in range(N_CLASSES):
-        ok = np.where((pred.y_pred == k) & (pred.y_true == k))[0]
-        if ok.size:
-            picks.append(ok[np.argmax(P[ok, k])])
-    cam = GradCAM(models["dual"], models["dual"].backbone.layer4)
-    if picks:
-        fig, axes = plt.subplots(2, len(picks), figsize=(2.4 * len(picks), 5), squeeze=False)
-        for j, i in enumerate(picks):
-            heat, k = cam(data["img"][i:i + 1], data["tab"][i:i + 1], ctx.device())
-            base = data["img"][i].numpy().mean(0)
-            axes[0, j].imshow(base, origin="lower", cmap="gray")
-            axes[0, j].set_title(MORPH_CLASSES[k], fontsize=9)
-            axes[1, j].imshow(base, origin="lower", cmap="gray")
-            axes[1, j].imshow(heat, origin="lower", cmap="jet", alpha=0.45)
-            for a in axes[:, j]:
-                a.axis("off")
-        fig.suptitle("Stage 6c: Grad-CAM (dual-branch ResNet-18, layer4)")
-        fig.tight_layout()
-        fig.savefig(out / "gradcam_examples.png", dpi=100)
-        plt.close(fig)
-    cam.remove()
+    test = supervised_splits(ctx)["test"].set_index("object_id").loc[pred.object_id].reset_index()
+    models = load_fusion(ctx)
+    physical = models["meta"]["physical_columns"]
+    X = predict_galaxies(ctx, test, models)["X"]
+    c = models["morph"].contribs(X)                      # (n, classes present in training, 1806)
+    cls = [MORPH_CLASSES[k] for k in models["morph"].classes_]
+    A = np.abs(c).mean(0)                                # (classes, features)
+    sl = block_slices(len(physical))
+    blocks = pd.DataFrame({b: A[:, sl[b]].sum(1) for b in BLOCKS}, index=cls)
+    shares = blocks.div(blocks.sum(1), axis=0)
+    phys = pd.DataFrame(A[:, sl["physical"]], index=cls, columns=physical)
+    shares.to_csv(out / "shap_blocks.csv")
+    phys.to_csv(out / "shap_physical.csv")
 
-    tab = models["tabular"]
-    names = models["prep"].kept
-    X = data["tab"].numpy()
-    if tab.kind == "xgboost":
-        c = tab.contribs(X)                   # (n, classes, features), computed in XGBoost's own process
-        idx = [MORPH_CLASSES[k] for k in tab.classes_] if c.shape[1] == len(tab.classes_) else ["all classes"]
-        shap = pd.DataFrame(np.abs(c).mean(0), index=idx, columns=names)
-        method = "XGBoost TreeSHAP (pred_contribs)"
-    elif tab.kind == "sklearn-hgb":
-        from sklearn.inspection import permutation_importance
-        remap = {c: i for i, c in enumerate(tab.classes_)}
-        yt = test_df.gz_label_id.map(remap)
-        ok = yt.notna().to_numpy()
-        pi = permutation_importance(tab.model, X[ok], yt[ok].astype(int), n_repeats=10, random_state=ctx.seed)
-        shap = pd.DataFrame([pi.importances_mean], index=["all classes"], columns=names)
-        method = "permutation importance"
-    else:                                     # a constant member has nothing to explain
-        shap = pd.DataFrame([np.zeros(len(names))], index=["all classes"], columns=names)
-        method = "none (tabular member is constant: one class in the training data)"
-    shap.to_csv(out / "shap_summary.csv")
-    ax = shap.T.plot.barh(figsize=(6.5, 0.35 * len(names) + 1.5), width=0.8)
-    ax.set_xlabel("mean |SHAP| (log-odds)")
-    ax.set_title("Stage 6c: tabular attributions per class")
-    plt.tight_layout()
-    plt.savefig(out / "shap_summary.png", dpi=110)
-    plt.close()
-    save_json({"gradcam_classes": [MORPH_CLASSES[int(pred.y_pred[i])] for i in picks], "attribution": method},
-              out / "summary.json")
-    ctx.log.info(f"[Stage 6c] Grad-CAM for {len(picks)} classes; {method}:\n" + shap.round(3).to_string())
-    return {"attribution": method}
+    fig, axs = plt.subplots(1, 2, figsize=(13, 4.8), gridspec_kw={"width_ratios": [1, 1.5]})
+    left = np.zeros(len(cls))
+    for b, col in zip(BLOCKS, ("#2a78d6", "#1baf7a", "#eb6834")):
+        axs[0].barh(cls, shares[b], left=left, color=col, label=b)
+        left += shares[b].to_numpy()
+    axs[0].set_xlabel("share of total |SHAP| per class")
+    axs[0].set_title("Which ENSEMBLE block drives each class")
+    axs[0].legend(fontsize=8, loc="lower right")
+    phys.T.plot.barh(ax=axs[1], width=0.8)
+    axs[1].set_xlabel("mean |SHAP| (log-odds)")
+    axs[1].set_title("Physical features per class")
+    fig.tight_layout()
+    fig.savefig(out / "shap_summary.png", dpi=110)
+    plt.close(fig)
+
+    # most confident correct test galaxy per class, as a colour cutout (R, G, B = reddest .. bluest band)
+    P = pred[[f"p_{c_}" for c_ in MORPH_CLASSES]].to_numpy()
+    picks = [ok[np.argmax(P[ok, k])] for k in range(N_CLASSES)
+             if (ok := np.where((pred.y_pred == k) & (pred.y_true == k))[0]).size]
+    if picks:
+        cut = load_cutouts(ctx)
+        fig, axes = plt.subplots(1, len(picks), figsize=(2.6 * len(picks), 2.9), squeeze=False)
+        for ax, i in zip(axes[0], picks):
+            img = np.asarray(cut[int(test.cutout_index[i])], np.float32)[::-1].transpose(1, 2, 0)
+            lo, hi = np.percentile(img, [1, 99.5])
+            v = np.clip((img - lo) / max(hi - lo, 1e-8), 0, 1)
+            ax.imshow(np.arcsinh(v / 0.1) / np.arcsinh(10), origin="lower")
+            k = int(pred.y_pred[i])
+            ax.set_title(f"{MORPH_CLASSES[k]}\np = {P[i, k]:.2f}", fontsize=9)
+            ax.axis("off")
+        fig.suptitle("Stage 6c: most confident correct test galaxy per class")
+        fig.tight_layout()
+        fig.savefig(out / "examples.png", dpi=100)
+        plt.close(fig)
+    save_json({"method": "XGBoost TreeSHAP (pred_contribs), fusion model", "n_test": int(len(test)),
+               "block_share_by_class": shares.round(4).to_dict(orient="index"),
+               "example_classes": [MORPH_CLASSES[int(pred.y_pred[i])] for i in picks]}, out / "summary.json")
+    ctx.log.info("[Stage 6c] share of |SHAP| by ENSEMBLE block:\n" + shares.round(3).to_string()
+                 + "\n[Stage 6c] physical features (mean |SHAP|):\n" + phys.round(3).to_string())
+    return {"classes": len(cls)}

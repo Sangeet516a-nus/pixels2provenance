@@ -92,6 +92,11 @@ def run(ctx: Ctx):
         rate = pd.concat([rate, extra])
     rate["n"] = ev.groupby("cluster").size()
     score = rate[list(NAMES)] / rate[list(NAMES)].max().replace(0, 1)
+    # a signal can only name a cluster if enough TRAIN members carry it (3 Gaia stars in a cluster of 400 are
+    # not evidence that the cluster is stars - the max-normalisation would otherwise inflate a rare signal)
+    min_n = int(cfg.get("min_evidence_members", 5))
+    support = ev[tr].groupby("cluster")[list(NAMES)].sum().reindex(rate.index).fillna(0)
+    score = score.where(support >= min_n, 0.0)
     names = {}
     for c, row in score.iterrows():
         if row.max() > 0:
@@ -114,6 +119,9 @@ def run(ctx: Ctx):
                if (hit & ~tr).any() else None,
                "cluster_names": {str(k): v for k, v in names.items()},
                "cluster_evidence": rate.round(3).reset_index().to_dict(orient="records")}
+    metrics["clustering_validation"] = clustering_validation(df, ev, tr, names)
+    ctx.log.info(f"[Stage 2d] external validation of the clusterings (held-out objects with exactly one evidence "
+                 f"signal): {metrics['clustering_validation']['summary']}")
     l, b = metrics["learned_star_vs_gaia"], metrics["baseline_star_vs_gaia"]
     metrics["objective2_minimum_met"] = bool(l["n_gaia_stars"] > 0 and l["f1"] > b["f1"])
     save_json(metrics, out / "semantic_audit.json")
@@ -127,6 +135,47 @@ def run(ctx: Ctx):
                  f"R={l['recall']} F1={l['f1']} | baseline P={b['precision']} R={b['recall']} F1={b['f1']} | "
                  f"Objective-2 minimum met: {metrics['objective2_minimum_met']}")
     return {"learned_f1": l["f1"], "baseline_f1": b["f1"]}
+
+
+def clustering_validation(df, ev, tr, gmm_names):
+    """EXTERNAL validation of GMM and HDBSCAN against the independent evidence (Gaia / stellar locus, GZH /
+    resolved-two-band, noise signals), on HELD-OUT objects that carry exactly ONE signal:
+      purity  = share of objects whose own evidence equals their cluster's majority evidence (cluster majority
+                taken from TRAIN members), compared with the trivial 'everything is the majority class' baseline;
+      NMI / ARI between cluster label and evidence label (0 = no information, 1 = identical partitions).
+    A clustering is only useful if its purity beats the majority baseline."""
+    from sklearn.metrics import adjusted_rand_score, normalized_mutual_info_score
+    E = ev[list(NAMES)].astype(bool)
+    one = (E.sum(axis=1) == 1).to_numpy()
+    own = E.idxmax(axis=1).to_numpy()
+    held = ~tr & one
+    res = {"n_heldout_single_evidence": int(held.sum()),
+           "majority_class_share": round(float(pd.Series(own[held]).value_counts(normalize=True).iloc[0]), 3)
+           if held.any() else None}
+    cols = {"gmm": df.cluster_id_gmm.to_numpy()}
+    if "cluster_id_hdbscan" in df and np.isfinite(df.cluster_id_hdbscan.to_numpy(float)).any():
+        cols["hdbscan"] = df.cluster_id_hdbscan.to_numpy(float)
+    for name, lab in cols.items():
+        lab = np.asarray(lab)
+        ok = held & (lab.astype(float) >= 0)                      # HDBSCAN noise (-1) is not a cluster
+        if not ok.any():
+            continue
+        maj = pd.Series(own[tr & one]).groupby(lab[tr & one]).agg(lambda s: s.value_counts().index[0])
+        pred = pd.Series(lab[ok]).map(maj).fillna(pd.Series(own[tr & one]).mode().iloc[0])  # no train member: majority
+        res[name] = {"n_scored": int(ok.sum()), "n_clusters": int(len(set(lab[lab.astype(float) >= 0]))),
+                     "purity": round(float((pred.to_numpy() == own[ok]).mean()), 3),
+                     "nmi_vs_evidence": round(float(normalized_mutual_info_score(own[ok], lab[ok])), 3),
+                     "ari_vs_evidence": round(float(adjusted_rand_score(own[ok], lab[ok])), 3)}
+        res[name]["purity_gain_over_majority"] = round(res[name]["purity"] - res["majority_class_share"], 3)
+    sem = df.cluster_id_gmm.map(gmm_names).to_numpy()
+    for c in NAMES:                                                # recall of each named population
+        m = held & (own == c)
+        if m.any():
+            res.setdefault("gmm_named_recall", {})[c] = round(float((sem[m] == c).mean()), 3)
+    res["summary"] = {k: {kk: v[kk] for kk in ("purity", "purity_gain_over_majority", "nmi_vs_evidence")}
+                      for k, v in res.items() if isinstance(v, dict) and "purity" in v}
+    res["summary"]["majority_class_share"] = res["majority_class_share"]
+    return res
 
 
 def two_band_confirmed(df):

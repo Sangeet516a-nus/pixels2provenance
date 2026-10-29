@@ -44,10 +44,15 @@ def phase7_region(ctx: Ctx, df) -> str:
 
 
 def run(ctx: Ctx):
+    from ..sealing import require_unsealed
+    require_unsealed(ctx, "7a")
     out = ctx.stage_dir("7a")
     df = galaxy_table(ctx)
-    region = phase7_region(ctx, df)
-    ext = df[df.split_tag == region].copy()
+    from ..modes import is_apply
+    region = "all" if is_apply(ctx) else phase7_region(ctx, df)
+    ext = df.copy() if region == "all" else df[df.split_tag == region].copy()
+    if region == "all":
+        ctx.log.info("[Stage 7a] apply mode: the frozen model never saw this field - every galaxy is out-of-field")
     if ext.empty:
         raise StageSkipped(f"No galaxies in the '{region}' region for Phase 7. Add a CANDELS field to data/raw and "
                            "list a filename/TARGNAME substring in partition.external_patterns.")
@@ -58,7 +63,7 @@ def run(ctx: Ctx):
     k15 = load_candels(ctx, metas)
     if k15 is None or k15.empty:
         raise StageSkipped("No CANDELS (Kartaltepe et al. 2015) table in data/catalogs covering the field.")
-    inner = df[df.split_tag.isin([s for s in ("train", "dev", "test") if s != region])]
+    inner = df.iloc[0:0] if region == "all" else df[df.split_tag.isin([s for s in ("train", "dev", "test") if s != region])]
     _, _, leak = sky_crossmatch(ext.ra, ext.dec, inner.ra, inner.dec, 1.0)
     assert not leak.any(), f"{region} object within 1 arcsec of a training-side object!"
 

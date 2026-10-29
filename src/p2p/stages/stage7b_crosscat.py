@@ -1,7 +1,7 @@
 """Stage 7b - Cross-catalogue evaluation (run once).
 
 Purpose : how well does the frozen model generalise to an independent expert scheme?
-Method  : the frozen, calibrated ensemble predicts every external galaxy with a
+Method  : the frozen, calibrated model (Stage 4b + 4c) predicts every external galaxy with a
           CANDELS label; galaxies in the GZH overlap (used for the ceiling) and
           expert point sources are excluded. Predictions are mapped to the
           shared taxonomy and scored with Macro-F1 (+ 95% bootstrap interval).
@@ -14,14 +14,16 @@ import pandas as pd
 from sklearn.metrics import classification_report, f1_score
 
 from ..context import Ctx, StageSkipped, save_json
-from ..features import TabularPrep, galaxy_table, load_cutouts, make_tensors
-from ..inference import calibrated_predict, load_models
+from ..features import galaxy_table
+from ..inference import predict_galaxies
 from ..nets import MORPH_CLASSES
 from ..utils import bootstrap_ci
 from .stage7a_taxonomy import COMMON, GZH_TO_COMMON
 
 
 def run(ctx: Ctx):
+    from ..sealing import require_unsealed
+    require_unsealed(ctx, "7b")
     out = ctx.stage_dir("7b")
     p = ctx.path("7a", "candels_objects.csv")
     if not p.exists():
@@ -32,8 +34,7 @@ def run(ctx: Ctx):
     if test.empty:
         raise StageSkipped("No CANDELS-labelled external galaxies outside the GZH overlap.")
     g = galaxy_table(ctx).set_index("object_id").loc[test.object_id].reset_index()
-    data = make_tensors(g, load_cutouts(ctx), TabularPrep.load(ctx.require("4a", "tab_prep.joblib")), with_labels=False)
-    res = calibrated_predict(ctx, data, load_models(ctx))
+    res = predict_galaxies(ctx, g)
     pred = np.array(MORPH_CLASSES)[res["morph"].argmax(1)]
     test = test.assign(pred_class=pred, pred_common=pd.Series(pred).map(GZH_TO_COMMON).to_numpy(),
                        p_merger=res["merger"])

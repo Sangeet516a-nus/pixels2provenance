@@ -21,27 +21,44 @@ from .stage7a_taxonomy import COMMON, GZH_TO_COMMON
 
 
 def run(ctx: Ctx):
+    from ..sealing import require_unsealed
+    require_unsealed(ctx, "7c")
     out = ctx.stage_dir("7c")
     if not ctx.path("7b", "cross_catalogue_metrics.json").exists():
         raise StageSkipped("Stage 7b has no result.")
     ceil = load_json(ctx.require("7a", "taxonomy_ceiling.json"))["ceiling_macro_f1"]
     xcat = load_json(ctx.require("7b", "cross_catalogue_metrics.json"))["xcat_macro_f1"]
-    tp = pd.read_csv(ctx.require("6a", "test_predictions.csv"))
     names = np.array(MORPH_CLASSES)
     f1 = lambda a, b: float(f1_score(a, b, labels=sorted(set(a) | set(b)), average="macro", zero_division=0))
-    indomain = round(f1(pd.Series(names[tp.y_true]).map(GZH_TO_COMMON), pd.Series(names[tp.y_pred]).map(GZH_TO_COMMON)), 4)
+    if ctx.path("6a", "test_predictions.csv").exists():
+        tp = pd.read_csv(ctx.path("6a", "test_predictions.csv"))
+        indomain = round(f1(pd.Series(names[tp.y_true]).map(GZH_TO_COMMON), pd.Series(names[tp.y_pred]).map(GZH_TO_COMMON)), 4)
+    else:
+        indomain = None                     # no labelled in-field test galaxies (apply mode without GZH)
     xp = pd.read_csv(ctx.require("7b", "crosscat_predictions.csv"))
     tert = pd.qcut(xp.snr, 3, labels=["low SNR", "mid SNR", "high SNR"]) if len(xp) >= 9 else None
     by_snr = {str(k): round(f1(g.k15_common, g.pred_common), 4) for k, g in xp.groupby(tert, observed=True)} if tert is not None else {}
-    train = supervised_splits(ctx)["train"]
     ext = galaxy_table(ctx).set_index("object_id").loc[xp.object_id]
-    shift = {c: {"gzh_train_median": round(float(train[c].median()), 3), "external_median": round(float(ext[c].median()), 3)}
-             for c in ("snr", "mag", "r_half", "gini", "asymmetry", "concentration") if c in train and c in ext}
+    SHIFT_COLS = ("snr", "mag", "r_half", "gini", "asymmetry", "concentration")
+    num_median = lambda s: float(pd.to_numeric(s, errors="coerce").median())   # robust to text-typed columns
+    from ..modes import card, is_apply
+    if is_apply(ctx):           # the training set is the bundle's (another field): use its stored medians
+        tmed = card(ctx).get("train_feature_medians", {})
+    else:
+        train = supervised_splits(ctx)["train"]
+        tmed = {c: num_median(train[c]) for c in SHIFT_COLS if c in train.columns}
+    shift = {c: {"gzh_train_median": round(float(tmed[c]), 3), "external_median": round(num_median(ext[c]), 3)}
+             for c in SHIFT_COLS if c in tmed and c in ext}
     rep = {"indomain_macro_f1_coarse": indomain, "taxonomy_ceiling_macro_f1": ceil, "cross_catalogue_macro_f1": xcat,
-           "true_degradation": round(ceil - xcat, 4), "naive_drop": round(indomain - xcat, 4),
-           "label_scheme_component": round(indomain - ceil, 4), "xcat_macro_f1_by_snr_tertile": by_snr,
+           "true_degradation": round(ceil - xcat, 4),
+           "naive_drop": round(indomain - xcat, 4) if indomain is not None else None,
+           "label_scheme_component": round(indomain - ceil, 4) if indomain is not None else None,
+           "xcat_macro_f1_by_snr_tertile": by_snr,
            "covariate_shift": shift,
            "phase7_region": load_json(ctx.require("7a", "taxonomy_ceiling.json")).get("phase7_region", "external")}
+    if rep["phase7_region"] == "all":
+        rep["note"] = ("apply mode: the frozen model was trained on another field, so every galaxy here is "
+                       "out-of-field; the gap mixes the field change (depth, PSF, bands) and the label-scheme change")
     if rep["phase7_region"] == "test":
         rep["note"] = ("single field: Phase 7 used the held-out test split, so depth and PSF match training; the gap "
                        "measures the label-scheme change and the fainter CANDELS-only galaxies, not a new field")
@@ -50,10 +67,10 @@ def run(ctx: Ctx):
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
     fig, ax = plt.subplots(figsize=(5.5, 3.4))
-    vals = [indomain, ceil, xcat]
+    vals = [indomain if indomain is not None else 0.0, ceil, xcat]
     ax.bar(["In-domain\n(coarse)", "Taxonomy\nceiling", "Cross-\ncatalogue"], vals, color=["#9AA3B5", "#D3D9E5", "#2E5496"])
     for i, v in enumerate(vals):
-        ax.text(i, v + 0.02, f"{v:.3f}", ha="center", fontsize=9)
+        ax.text(i, v + 0.02, "n/a" if (i == 0 and indomain is None) else f"{v:.3f}", ha="center", fontsize=9)
     ax.set_ylim(0, 1.1)
     ax.set_ylabel("Macro-F1 (shared taxonomy)")
     ax.set_title(f"Stage 7c: true degradation = {ceil - xcat:+.3f}")

@@ -21,7 +21,12 @@ from ..utils import as_bool, predictive_entropy
 
 
 def run(ctx: Ctx):
+    from ..sealing import require_unsealed
+    require_unsealed(ctx, "6b")
     out = ctx.stage_dir("6b")
+    if not ctx.path("6a", "test_predictions.csv").exists():
+        from ..context import StageSkipped
+        raise StageSkipped("Stage 6a has no test predictions (no labelled galaxies to evaluate)")
     pred = pd.read_csv(ctx.require("6a", "test_predictions.csv"))
     test = supervised_splits(ctx)["test"][["object_id", "human_disagreement", "in_boundary_set"]]
     d = pred.merge(test, on="object_id")

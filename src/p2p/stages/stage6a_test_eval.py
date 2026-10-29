@@ -1,7 +1,7 @@
 """Stage 6a - In-domain test (run once).
 
 Purpose : the final, honest in-domain score.
-Method  : the frozen, calibrated ensemble is run on the untouched GZH test
+Method  : the frozen, calibrated model (Stage 4b fusion XGBoost + Stage 4c calibration) is run on the untouched GZH test
           split: Macro-F1, balanced accuracy, per-class precision/recall,
           one-vs-rest PR-AUC, merger PR-AUC and ECE, each with a 95% bootstrap
           interval (small test sets need error bars), scored against the tiered
@@ -18,8 +18,8 @@ import pandas as pd
 from sklearn.metrics import average_precision_score, classification_report, confusion_matrix, f1_score
 
 from ..context import Ctx, load_json, save_json
-from ..features import TabularPrep, load_cutouts, make_tensors, supervised_splits
-from ..inference import calibrated_predict, load_models
+from ..features import supervised_splits
+from ..inference import predict_galaxies
 from ..nets import MORPH_CLASSES, N_CLASSES, morph_metrics
 from ..utils import bootstrap_ci, expected_calibration_error
 
@@ -37,6 +37,8 @@ def _ci(c):
 
 
 def run(ctx: Ctx):
+    from ..sealing import require_unsealed
+    require_unsealed(ctx, "6a")
     out = ctx.stage_dir("6a")
     ledger_p = out / "test_split_ledger.json"
     ledger = load_json(ledger_p) if ledger_p.exists() else {"evaluations": []}
@@ -44,12 +46,16 @@ def run(ctx: Ctx):
         ctx.log.info(f"[Stage 6a] WARNING: the test split was already evaluated {len(ledger['evaluations'])} time(s). "
                      "Report the FIRST result and do not tune on these numbers.")
     splits = supervised_splits(ctx)
-    prep = TabularPrep.load(ctx.require("4a", "tab_prep.joblib"))
-    test = make_tensors(splits["test"], load_cutouts(ctx), prep)
-    res = calibrated_predict(ctx, test, load_models(ctx))
-    y, ym, P = test["y"].numpy(), test["ym"].numpy().astype(int), res["morph"]
+    tdf = splits["test"]
+    res = predict_galaxies(ctx, tdf)
+    y, ym, P = tdf.gz_label_id.astype(int).to_numpy(), tdf.gz_merger_flag.fillna(0).astype(int).to_numpy(), res["morph"]
     pred = P.argmax(1)
-    maj = np.bincount(splits["train"].gz_label_id, minlength=N_CLASSES).argmax()
+    from ..modes import card, is_apply
+    if is_apply(ctx) and card(ctx).get("train_class_counts"):
+        cc = card(ctx)["train_class_counts"]                      # the bundle's own training set
+        maj = int(np.argmax([cc.get(c, 0) for c in MORPH_CLASSES]))
+    else:
+        maj = np.bincount(splits["train"].gz_label_id, minlength=N_CLASSES).argmax()
     maj_f1 = morph_metrics(y, np.eye(N_CLASSES)[np.full(len(y), maj)])["macro_f1"]
     m = morph_metrics(y, P, ym, res["merger"])
     f1 = lambda yy, PP: f1_score(yy, PP.argmax(1), average="macro",
@@ -75,12 +81,12 @@ def run(ctx: Ctx):
     ledger["evaluations"].append({"utc": datetime.datetime.now(datetime.timezone.utc).isoformat(timespec="seconds"),
                                   "macro_f1": m["macro_f1"], "n_test": int(len(y))})
     save_json(ledger, ledger_p)
-    pr = pd.DataFrame({"object_id": test["object_id"], "y_true": y, "y_pred": pred, "p_merger": res["merger"]})
+    pr = pd.DataFrame({"object_id": tdf.object_id.to_numpy(), "y_true": y, "y_pred": pred, "p_merger": res["merger"]})
     for k, c in enumerate(MORPH_CLASSES):
         pr[f"p_{c}"] = P[:, k]
     pr.to_csv(out / "test_predictions.csv", index=False)
     _confusion(y, pred, out)
-    ctx.log.info(f"[Stage 6a] test n={len(y)}: Macro-F1 {m['macro_f1']} (95% CI {m['macro_f1_ci95'][0]:.3f}-"
+    ctx.log.info(f"[Stage 6a] test n={len(y)}: accuracy {m['accuracy']} | Macro-F1 {m['macro_f1']} (95% CI {m['macro_f1_ci95'][0]:.3f}-"
                  f"{m['macro_f1_ci95'][1]:.3f}) | balanced acc {m['balanced_acc']} | merger PR-AUC "
                  f"{m.get('merger_pr_auc')} (95% CI {_ci(m.get('merger_pr_auc_ci95'))}, "
                  f"{m.get('n_merger_test', 0)} mergers) | ECE {m['ece']} (95% CI {_ci(m['ece_ci95'])}) | "
