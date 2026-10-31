@@ -21,8 +21,6 @@ from ..utils import as_bool, predictive_entropy
 
 
 def run(ctx: Ctx):
-    from ..sealing import require_unsealed
-    require_unsealed(ctx, "6b")
     out = ctx.stage_dir("6b")
     if not ctx.path("6a", "test_predictions.csv").exists():
         from ..context import StageSkipped

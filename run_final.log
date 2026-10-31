@@ -1,0 +1,1285 @@
+12:30:09  ==============================================================================
+12:30:09  Stage 0 - Sky-region partitioning
+12:30:09  ==============================================================================
+12:30:09  [Stage 0] pointing P01: ['F606W', 'F435W', 'F775W'] (hst_9803_33_acs_wfc_f606w_j8mt33ek_drc.fits, hst_9803_39_acs_wfc_f435w_j8mt39ot_drc.fits, hst_9803_41_acs_wfc_f775w_j8mt41fc_drc.fits)
+12:30:09  [Stage 0] pointing P02: ['F435W', 'F606W', 'F775W'] (hst_9425_11_acs_wfc_f435w_j8e611rb_drc.fits, j8e688010_drc.fits, j8e688030_drc.fits)
+12:30:09  [Stage 0] pointing P03: ['F435W', 'F606W', 'F775W'] (j8e613010_drc.fits, j8e628010_drc.fits, j8e628030_drc.fits)
+12:30:09  [Stage 0] pointing P04: ['F435W', 'F606W', 'F775W'] (j8e609010_drc.fits, j8e624010_drc.fits, j8e624030_drc.fits)
+12:30:09  [Stage 0] pointing P05: ['F435W', 'F606W', 'F775W'] (j8e606010_drc.fits, j8e621010_drc.fits, j8e621030_drc.fits)
+12:30:09  [Stage 0] pointing P06: ['F435W', 'F606W', 'F775W'] (j8e607010_drc.fits, j8e622010_drc.fits, j8e622030_drc.fits)
+12:30:09  [Stage 0] pointing P07: ['F775W', 'F606W', 'F435W'] (hst_11563_34_acs_wfc_f775w_jb5x34tc_drc.fits, hst_11563_4i_acs_wfc_f606w_jb5x4ilh_drc.fits, jb5x4k010_drc.fits)
+12:30:09  [Stage 0] pointing P08: ['F435W', 'F606W', 'F775W'] (j8dna6010_drc.fits, j8dnc1010_drc.fits, j8dnf2030_drc.fits)
+12:30:09  [Stage 0] pointing P09: ['F435W', 'F606W', 'F775W'] (j8dna0010_drc.fits, j8dnb5010_drc.fits, j8dnb5030_drc.fits)
+12:30:09  [Stage 0] pointing P10: ['F435W', 'F606W', 'F775W'] (hst_9583_a1_acs_wfc_f435w_j8dna1ar_drc.fits, hst_9583_h8_acs_wfc_f606w_j8dnh8we_drc.fits, hst_9583_h8_acs_wfc_f775w_j8dnh8wn_drc.fits)
+12:30:09  [Stage 0] pointing P11: ['F435W', 'F606W', 'F775W'] (j8dna9010_drc.fits, j8dnc4010_drc.fits, j8dnc4030_drc.fits)
+12:30:09  [Stage 0] pointing P12: ['F435W', 'F606W', 'F775W'] (j8dna3010_drc.fits, j8dnb8010_drc.fits, j8dnb8030_drc.fits)
+12:30:09  [Stage 0] pointing P13: ['F435W', 'F606W', 'F775W'] (j8dna4010_drc.fits, j8dnb9010_drc.fits, j8dnb9030_drc.fits)
+12:30:09  [Stage 0] pointing P14: ['F435W', 'F606W', 'F775W'] (j8dn99010_drc.fits, j8dnb4010_drc.fits, j8dnb4030_drc.fits)
+12:30:11  [Stage 0] P01_GOODS-S-2: stripes {'test': 129, 'dev': 30} by share of GZH galaxies (173 in the pointing)
+12:30:13  [Stage 0] P07_GOODS-S: stripes {'train': 61, 'dev': 121, 'external': 68} by share of GZH galaxies (299 in the pointing)
+12:30:14  [Stage 0] P09_GOODS-N-3: stripes {'train': 198, 'dev': 168} by share of GZH galaxies (424 in the pointing)
+12:30:16  [Stage 0] P12_GOODS-N-2: stripes {'train': 220, 'test': 50, 'external': 50} by share of GZH galaxies (349 in the pointing)
+12:30:16  [Stage 0] P13_GOODS-N-4: stripes {'test': 194, 'external': 100} by share of GZH galaxies (321 in the pointing)
+12:30:30  [Stage 0] stripes fitted to the target counts: total difference 53 GZH galaxies
+12:30:30  [Stage 0] GZH galaxies (positions, no classes) per pointing and split:
+split          train  dev  test  external  no split
+pointing                                           
+P01_GOODS-S-2      0   33   133         0         7
+P02_GOODS-S-4    353    0     0         0         0
+P03_GOODS-S-8    330    0     0         0         0
+P04_GOODS-S-9    268    0     0         0         0
+P05_GOODS-S-3    354    0     0         0         0
+P06_GOODS-S-5    295    0     0         0         0
+P07_GOODS-S       62  127     0        72        34
+P08_GOODS-N-7      0    0     0       308        14
+P09_GOODS-N-3    206  176     0         0        42
+P10_GOODS-N-1    372    0     0         0        13
+P11_GOODS-N-9    324    0     0         0        19
+P12_GOODS-N-2    212    0    48        47        42
+P13_GOODS-N-4      0    0   191        97        17
+P14_GOODS-N-6    340    0     0         0        10
+Total           3116  336   372       524       198
+12:30:31  [Stage 0] 21 regions (planned (partition.pointing_splits)); collar 0.06'; tags {'train': 11, 'external': 4, 'test': 3, 'dev': 3}
+12:30:31  [Stage 0] Ruleset frozen -> outputs/stage0_partition/split_rule.json
+12:30:31  [Stage 0] ok in 21.7 s
+12:30:31  ==============================================================================
+12:30:31  Stage 1a - Archive acquisition / local scan
+12:30:31  ==============================================================================
+12:30:31  [Stage 1a] P01 GOODS-S-2 (gzh, splits ['dev', 'test']): bands ['F435W', 'F606W', 'F775W'] detection=F775W missing=[] instrument=ACS
+12:30:31  [Stage 1a] P02 GOODS-S-4 (gzh, splits ['train']): bands ['F435W', 'F606W', 'F775W'] detection=F775W missing=[] instrument=ACS
+12:30:31  [Stage 1a] P03 GOODS-S-8 (gzh, splits ['train']): bands ['F435W', 'F606W', 'F775W'] detection=F775W missing=[] instrument=ACS
+12:30:31  [Stage 1a] P04 GOODS-S-9 (gzh, splits ['train']): bands ['F435W', 'F606W', 'F775W'] detection=F775W missing=[] instrument=ACS
+12:30:31  [Stage 1a] P05 GOODS-S-3 (gzh, splits ['train']): bands ['F435W', 'F606W', 'F775W'] detection=F775W missing=[] instrument=ACS
+12:30:31  [Stage 1a] P06 GOODS-S-5 (gzh, splits ['train']): bands ['F435W', 'F606W', 'F775W'] detection=F775W missing=[] instrument=ACS
+12:30:31  [Stage 1a] P07 GOODS-S (gzh, splits ['dev', 'external', 'train']): bands ['F435W', 'F606W', 'F775W'] detection=F775W missing=[] instrument=ACS
+12:30:31  [Stage 1a] P08 GOODS-N-7 (external, splits ['external']): bands ['F435W', 'F606W', 'F775W'] detection=F775W missing=[] instrument=ACS
+12:30:31  [Stage 1a] P09 GOODS-N-3 (gzh, splits ['dev', 'train']): bands ['F435W', 'F606W', 'F775W'] detection=F775W missing=[] instrument=ACS
+12:30:31  [Stage 1a] P10 GOODS-N-1 (gzh, splits ['train']): bands ['F435W', 'F606W', 'F775W'] detection=F775W missing=[] instrument=ACS
+12:30:31  [Stage 1a] P11 GOODS-N-9 (gzh, splits ['train']): bands ['F435W', 'F606W', 'F775W'] detection=F775W missing=[] instrument=ACS
+12:30:31  [Stage 1a] P12 GOODS-N-2 (gzh, splits ['external', 'test', 'train']): bands ['F435W', 'F606W', 'F775W'] detection=F775W missing=[] instrument=ACS
+12:30:31  [Stage 1a] P13 GOODS-N-4 (gzh, splits ['external', 'test']): bands ['F435W', 'F606W', 'F775W'] detection=F775W missing=[] instrument=ACS
+12:30:31  [Stage 1a] P14 GOODS-N-6 (gzh, splits ['train']): bands ['F435W', 'F606W', 'F775W'] detection=F775W missing=[] instrument=ACS
+12:30:31  [Stage 1a] 42 verified file(s), 0 rejected; band set = ['F435W', 'F606W', 'F775W']
+12:30:31  [Stage 1a] ok in 0.3 s
+12:30:31  ==============================================================================
+12:30:31  Stage 1b - Frame quality control (CAE)
+12:30:31  ==============================================================================
+12:30:51  [Stage 1b] tiles per Stage 0 split: {'train': 25269, 'external': 4674, 'test': 3635, 'dev': 2910, 'collar': 2773}; QC model uses ['dev', 'train'] only: 4000 tiles in 606 sky cells of 30" (whole cells go to one role)
+12:30:51  [Stage 1b] training QC-CAE v2 (653,969 weights) on 2793 tiles, validation 407 (mps); at most 120 epochs, early stopping after 10 epochs without a 0.5% improvement
+12:30:56    [QC-CAE] epoch   1  train 0.00806  val 0.00258  lr 1.0e-03  no gain 0/10  *
+12:30:59    [QC-CAE] epoch   2  train 0.00283  val 0.00255  lr 1.0e-03  no gain 0/10  *
+12:31:03    [QC-CAE] epoch   3  train 0.00281  val 0.00255  lr 1.0e-03  no gain 1/10  *
+12:31:07    [QC-CAE] epoch   4  train 0.00281  val 0.00252  lr 1.0e-03  no gain 0/10  *
+12:31:11    [QC-CAE] epoch   5  train 0.00280  val 0.00251  lr 1.0e-03  no gain 1/10  *
+12:31:15    [QC-CAE] epoch   6  train 0.00279  val 0.00251  lr 1.0e-03  no gain 2/10
+12:31:20    [QC-CAE] epoch   7  train 0.00280  val 0.00251  lr 1.0e-03  no gain 3/10  *
+12:31:24    [QC-CAE] epoch   8  train 0.00281  val 0.00251  lr 1.0e-03  no gain 4/10  *
+12:31:28    [QC-CAE] epoch   9  train 0.00281  val 0.00250  lr 1.0e-03  no gain 0/10  *
+12:31:32    [QC-CAE] epoch  10  train 0.00278  val 0.00251  lr 1.0e-03  no gain 1/10
+12:31:35    [QC-CAE] epoch  11  train 0.00278  val 0.00251  lr 1.0e-03  no gain 2/10
+12:31:39    [QC-CAE] epoch  12  train 0.00276  val 0.00249  lr 1.0e-03  no gain 0/10  *
+12:31:43    [QC-CAE] epoch  13  train 0.00275  val 0.00249  lr 1.0e-03  no gain 1/10  *
+12:31:47    [QC-CAE] epoch  14  train 0.00272  val 0.00248  lr 1.0e-03  no gain 2/10  *
+12:31:51    [QC-CAE] epoch  15  train 0.00268  val 0.00245  lr 1.0e-03  no gain 0/10  *
+12:31:54    [QC-CAE] epoch  16  train 0.00260  val 0.00242  lr 1.0e-03  no gain 0/10  *
+12:31:58    [QC-CAE] epoch  17  train 0.00256  val 0.00252  lr 1.0e-03  no gain 1/10
+12:32:02    [QC-CAE] epoch  18  train 0.00257  val 0.00243  lr 1.0e-03  no gain 2/10
+12:32:06    [QC-CAE] epoch  19  train 0.00250  val 0.00239  lr 1.0e-03  no gain 0/10  *
+12:32:10    [QC-CAE] epoch  20  train 0.00250  val 0.00241  lr 1.0e-03  no gain 1/10
+12:32:14    [QC-CAE] epoch  21  train 0.00259  val 0.00249  lr 1.0e-03  no gain 2/10
+12:32:18    [QC-CAE] epoch  22  train 0.00259  val 0.00237  lr 1.0e-03  no gain 0/10  *
+12:32:21    [QC-CAE] epoch  23  train 0.00248  val 0.00240  lr 1.0e-03  no gain 1/10
+12:32:25    [QC-CAE] epoch  24  train 0.00244  val 0.00236  lr 1.0e-03  no gain 0/10  *
+12:32:29    [QC-CAE] epoch  25  train 0.00246  val 0.00237  lr 1.0e-03  no gain 1/10
+12:32:33    [QC-CAE] epoch  26  train 0.00247  val 0.00240  lr 1.0e-03  no gain 2/10
+12:32:36    [QC-CAE] epoch  27  train 0.00247  val 0.00239  lr 1.0e-03  no gain 3/10
+12:32:40    [QC-CAE] epoch  28  train 0.00245  val 0.00239  lr 1.0e-03  no gain 4/10
+12:32:44    [QC-CAE] epoch  29  train 0.00255  val 0.00239  lr 5.0e-04  no gain 5/10
+12:32:48    [QC-CAE] epoch  30  train 0.00250  val 0.00236  lr 5.0e-04  no gain 6/10
+12:32:51    [QC-CAE] epoch  31  train 0.00244  val 0.00234  lr 5.0e-04  no gain 0/10  *
+12:32:55    [QC-CAE] epoch  32  train 0.00240  val 0.00234  lr 5.0e-04  no gain 1/10  *
+12:32:59    [QC-CAE] epoch  33  train 0.00240  val 0.00233  lr 5.0e-04  no gain 0/10  *
+12:33:03    [QC-CAE] epoch  34  train 0.00240  val 0.00233  lr 5.0e-04  no gain 1/10  *
+12:33:06    [QC-CAE] epoch  35  train 0.00239  val 0.00234  lr 5.0e-04  no gain 2/10
+12:33:10    [QC-CAE] epoch  36  train 0.00239  val 0.00233  lr 5.0e-04  no gain 3/10  *
+12:33:14    [QC-CAE] epoch  37  train 0.00240  val 0.00234  lr 5.0e-04  no gain 4/10
+12:33:17    [QC-CAE] epoch  38  train 0.00239  val 0.00233  lr 5.0e-04  no gain 5/10
+12:33:21    [QC-CAE] epoch  39  train 0.00238  val 0.00233  lr 5.0e-04  no gain 6/10  *
+12:33:25    [QC-CAE] epoch  40  train 0.00239  val 0.00232  lr 5.0e-04  no gain 7/10  *
+12:33:29    [QC-CAE] epoch  41  train 0.00238  val 0.00232  lr 5.0e-04  no gain 0/10  *
+12:33:33    [QC-CAE] epoch  42  train 0.00237  val 0.00231  lr 5.0e-04  no gain 1/10  *
+12:33:37    [QC-CAE] epoch  43  train 0.00238  val 0.00231  lr 5.0e-04  no gain 2/10  *
+12:33:40    [QC-CAE] epoch  44  train 0.00236  val 0.00231  lr 5.0e-04  no gain 3/10  *
+12:33:44    [QC-CAE] epoch  45  train 0.00242  val 0.00233  lr 5.0e-04  no gain 4/10
+12:33:48    [QC-CAE] epoch  46  train 0.00242  val 0.00233  lr 5.0e-04  no gain 5/10
+12:33:52    [QC-CAE] epoch  47  train 0.00240  val 0.00232  lr 5.0e-04  no gain 6/10
+12:33:56    [QC-CAE] epoch  48  train 0.00236  val 0.00232  lr 5.0e-04  no gain 7/10
+12:34:00    [QC-CAE] epoch  49  train 0.00236  val 0.00231  lr 2.5e-04  no gain 8/10
+12:34:04    [QC-CAE] epoch  50  train 0.00235  val 0.00230  lr 2.5e-04  no gain 0/10  *
+12:34:08    [QC-CAE] epoch  51  train 0.00235  val 0.00229  lr 2.5e-04  no gain 1/10  *
+12:34:12    [QC-CAE] epoch  52  train 0.00237  val 0.00230  lr 2.5e-04  no gain 2/10
+12:34:15    [QC-CAE] epoch  53  train 0.00234  val 0.00229  lr 2.5e-04  no gain 0/10  *
+12:34:19    [QC-CAE] epoch  54  train 0.00233  val 0.00229  lr 2.5e-04  no gain 1/10
+12:34:23    [QC-CAE] epoch  55  train 0.00233  val 0.00229  lr 2.5e-04  no gain 2/10  *
+12:34:27    [QC-CAE] epoch  56  train 0.00234  val 0.00229  lr 2.5e-04  no gain 3/10
+12:34:31    [QC-CAE] epoch  57  train 0.00233  val 0.00229  lr 2.5e-04  no gain 4/10  *
+12:34:34    [QC-CAE] epoch  58  train 0.00233  val 0.00229  lr 2.5e-04  no gain 5/10
+12:34:39    [QC-CAE] epoch  59  train 0.00233  val 0.00228  lr 2.5e-04  no gain 6/10  *
+12:34:43    [QC-CAE] epoch  60  train 0.00233  val 0.00229  lr 2.5e-04  no gain 7/10
+12:34:48    [QC-CAE] epoch  61  train 0.00233  val 0.00228  lr 2.5e-04  no gain 8/10  *
+12:34:52    [QC-CAE] epoch  62  train 0.00233  val 0.00229  lr 2.5e-04  no gain 9/10
+12:34:57    [QC-CAE] epoch  63  train 0.00233  val 0.00228  lr 2.5e-04  no gain 10/10
+12:34:57    [QC-CAE] early stop: validation loss not improved by 0.5% for 10 epochs
+12:34:57  [Stage 1b] best validation loss 0.00228 at epoch 61 of 63; a flat tile (each tile = its mean) scores 0.00246 -> gain 7.4%
+12:34:58  [Stage 1b] 2793 training, 407 validation and 800 calibration tiles from 42 file(s)
+12:35:01  [Stage 1b] threshold 0.00255 (95 % bootstrap interval 0.00200-0.00291)
+12:40:05  [Stage 1b] threshold MSE = 0.00255; flagged tile fraction per file: {'hst_11563_34_acs_wfc_f775w_jb5x34tc_drc.fits': 0.0075, 'hst_11563_4i_acs_wfc_f606w_jb5x4ilh_drc.fits': 0.0092, 'hst_9425_11_acs_wfc_f435w_j8e611rb_drc.fits': 0.0655, 'hst_9583_a1_acs_wfc_f435w_j8dna1ar_drc.fits': 0.0028, 'hst_9583_h8_acs_wfc_f606w_j8dnh8we_drc.fits': 0.004, 'hst_9583_h8_acs_wfc_f775w_j8dnh8wn_drc.fits': 0.0021, 'hst_9803_33_acs_wfc_f606w_j8mt33ek_drc.fits': 0.0203, 'hst_9803_39_acs_wfc_f435w_j8mt39ot_drc.fits': 0.0314, 'hst_9803_41_acs_wfc_f775w_j8mt41fc_drc.fits': 0.0129, 'j8dn99010_drc.fits': 0.0072, 'j8dna0010_drc.fits': 0.0007, 'j8dna3010_drc.fits': 0.0023, 'j8dna4010_drc.fits': 0.0061, 'j8dna6010_drc.fits': 0.0007, 'j8dna9010_drc.fits': 0.0026, 'j8dnb4010_drc.fits': 0.0132, 'j8dnb4030_drc.fits': 0.009, 'j8dnb5010_drc.fits': 0.001, 'j8dnb5030_drc.fits': 0.001, 'j8dnb8010_drc.fits': 0.0027, 'j8dnb8030_drc.fits': 0.0029, 'j8dnb9010_drc.fits': 0.0073, 'j8dnb9030_drc.fits': 0.0061, 'j8dnc1010_drc.fits': 0.0007, 'j8dnc4010_drc.fits': 0.0034, 'j8dnc4030_drc.fits': 0.0037, 'j8dnf2030_drc.fits': 0.0002, 'j8e606010_drc.fits': 0.0021, 'j8e607010_drc.fits': 0.0042, 'j8e609010_drc.fits': 0.0019, 'j8e613010_drc.fits': 0.0007, 'j8e621010_drc.fits': 0.0032, 'j8e621030_drc.fits': 0.0037, 'j8e622010_drc.fits': 0.0044, 'j8e622030_drc.fits': 0.0037, 'j8e624010_drc.fits': 0.0019, 'j8e624030_drc.fits': 0.0012, 'j8e628010_drc.fits': 0.0005, 'j8e628030_drc.fits': 0.0002, 'j8e688010_drc.fits': 0.0029, 'j8e688030_drc.fits': 0.0024, 'jb5x4k010_drc.fits': 0.0}; overall 0.62% (threshold interval -> 0.43%-1.95%)
+12:40:05  [Stage 1b] ok in 573.6 s
+12:40:05  ==============================================================================
+12:40:05  Stage 1c - Detection, deblending, aligned cutouts
+12:40:05  ==============================================================================
+12:40:07  [Stage 1c] P01: detecting on F775W ...
+WARNING: PhotutilsDeprecationWarning: 'progress_bar' was deprecated in version 3.1 and will be removed in version 4.0. [astropy.utils.decorators]
+12:40:39  [Stage 1c] P01: F435W vs F775W: 74 matched sources (peak 7.1x the random-pair level), offset [-0.0122, 0.006]" -> corrected (measured), residual [0.0, 0.0]" (dRA cos(dec), dDec)
+12:40:46  [Stage 1c] P01: F606W vs F775W: 289 matched sources (peak 18.9x the random-pair level), offset [-0.0051, 0.0052]" -> no correction, residual [-0.0051, 0.0052]" (dRA cos(dec), dDec)
+12:40:53  [Stage 1c] P01: 49686 detections | confirmed by another band 6287 | cosmic-ray candidates 40290 | no other band covers 3109
+12:40:53  [Stage 1c] P01: 9396 confirmed sources, keeping the brightest 8000 (detection.max_sources_per_pointing)
+12:40:53  [Stage 1c] P01: 40290 cosmic-ray candidates, keeping the brightest 1000 (detection.max_cr_candidates_per_pointing; they stay in the catalogue as Noise)
+12:41:52  [Stage 1c] P01: cosmic-ray pixels masked in 5176 of 9000 target footprints (median 19.0 px)
+12:41:53  [Stage 1c] P01: 9000 sources | median SNR 39.4 | edge-flagged 1104 | QC-flagged 424 | splits {'buffer': 4463, 'test': 3767, 'dev': 770}
+12:41:53  [Stage 1c] P02: detecting on F775W ...
+WARNING: PhotutilsDeprecationWarning: 'progress_bar' was deprecated in version 3.1 and will be removed in version 4.0. [astropy.utils.decorators]
+12:42:15  [Stage 1c] P02: F435W vs F775W: 100 matched sources (peak 34.5x the random-pair level), offset [0.0289, -0.0245]" -> corrected (measured), residual [0.0, -0.0]" (dRA cos(dec), dDec)
+12:42:20  [Stage 1c] P02: F606W vs F775W: 462 matched sources (peak 238.5x the random-pair level), offset [0.0139, -0.0077]" -> corrected (measured), residual [0.0, -0.0]" (dRA cos(dec), dDec)
+12:42:25  [Stage 1c] P02: 1922 detections | confirmed by another band 1082 | cosmic-ray candidates 835 | no other band covers 5
+12:42:40  [Stage 1c] P02: cosmic-ray pixels masked in 673 of 1922 target footprints (median 7.0 px)
+12:42:40  [Stage 1c] P02: 1922 sources | median SNR 17.3 | edge-flagged 207 | QC-flagged 181 | splits {'train': 1866, 'buffer': 56}
+12:42:40  [Stage 1c] P03: detecting on F775W ...
+WARNING: PhotutilsDeprecationWarning: 'progress_bar' was deprecated in version 3.1 and will be removed in version 4.0. [astropy.utils.decorators]
+12:42:59  [Stage 1c] P03: F435W vs F775W: 328 matched sources (peak 193.2x the random-pair level), offset [0.0975, 0.5104]" -> corrected (measured), residual [-0.0001, 0.0]" (dRA cos(dec), dDec)
+12:43:05  [Stage 1c] P03: F606W vs F775W: 391 matched sources (peak 225.0x the random-pair level), offset [0.0019, -0.0018]" -> no correction, residual [0.0019, -0.0018]" (dRA cos(dec), dDec)
+12:43:09  [Stage 1c] P03: 2475 detections | confirmed by another band 991 | cosmic-ray candidates 1484 | no other band covers 0
+12:43:09  [Stage 1c] P03: 1484 cosmic-ray candidates, keeping the brightest 1000 (detection.max_cr_candidates_per_pointing; they stay in the catalogue as Noise)
+12:43:19  [Stage 1c] P03: cosmic-ray pixels masked in 71 of 1991 target footprints (median 8.0 px)
+12:43:20  [Stage 1c] P03: 1991 sources | median SNR 21.5 | edge-flagged 269 | QC-flagged 6 | splits {'train': 1981, 'buffer': 10}
+12:43:20  [Stage 1c] P04: detecting on F775W ...
+WARNING: PhotutilsDeprecationWarning: 'progress_bar' was deprecated in version 3.1 and will be removed in version 4.0. [astropy.utils.decorators]
+12:43:38  [Stage 1c] P04: F435W vs F775W: 290 matched sources (peak 220.1x the random-pair level), offset [-0.5066, 0.2595]" -> corrected (measured), residual [-0.0, 0.0]" (dRA cos(dec), dDec)
+12:43:44  [Stage 1c] P04: F606W vs F775W: 330 matched sources (peak 276.2x the random-pair level), offset [0.0003, -0.0022]" -> no correction, residual [0.0003, -0.0022]" (dRA cos(dec), dDec)
+12:43:49  [Stage 1c] P04: 1803 detections | confirmed by another band 880 | cosmic-ray candidates 923 | no other band covers 0
+12:43:59  [Stage 1c] P04: cosmic-ray pixels masked in 50 of 1803 target footprints (median 5.5 px)
+12:43:59  [Stage 1c] P04: 1803 sources | median SNR 17.9 | edge-flagged 253 | QC-flagged 33 | splits {'train': 1786, 'buffer': 17}
+12:43:59  [Stage 1c] P05: detecting on F775W ...
+WARNING: PhotutilsDeprecationWarning: 'progress_bar' was deprecated in version 3.1 and will be removed in version 4.0. [astropy.utils.decorators]
+12:44:18  [Stage 1c] P05: F435W vs F775W: 382 matched sources (peak 209.0x the random-pair level), offset [-0.0024, -0.0005]" -> no correction, residual [-0.0024, -0.0005]" (dRA cos(dec), dDec)
+12:44:24  [Stage 1c] P05: F606W vs F775W: 450 matched sources (peak 241.9x the random-pair level), offset [-0.0012, 0.0018]" -> no correction, residual [-0.0012, 0.0018]" (dRA cos(dec), dDec)
+12:44:29  [Stage 1c] P05: 2155 detections | confirmed by another band 1034 | cosmic-ray candidates 1121 | no other band covers 0
+12:44:29  [Stage 1c] P05: 1121 cosmic-ray candidates, keeping the brightest 1000 (detection.max_cr_candidates_per_pointing; they stay in the catalogue as Noise)
+12:44:40  [Stage 1c] P05: cosmic-ray pixels masked in 61 of 2034 target footprints (median 5.0 px)
+12:44:41  [Stage 1c] P05: 2034 sources | median SNR 18.5 | edge-flagged 256 | QC-flagged 29 | splits {'train': 2034}
+12:44:41  [Stage 1c] P06: detecting on F775W ...
+WARNING: PhotutilsDeprecationWarning: 'progress_bar' was deprecated in version 3.1 and will be removed in version 4.0. [astropy.utils.decorators]
+12:45:00  [Stage 1c] P06: F435W vs F775W: 335 matched sources (peak 231.0x the random-pair level), offset [0.2419, 2.6967]" -> corrected (measured), residual [0.0004, 0.0]" (dRA cos(dec), dDec)
+12:45:07  [Stage 1c] P06: F606W vs F775W: 375 matched sources (peak 243.5x the random-pair level), offset [0.0144, 0.0162]" -> corrected (measured), residual [0.0, 0.0]" (dRA cos(dec), dDec)
+12:45:11  [Stage 1c] P06: 2197 detections | confirmed by another band 863 | cosmic-ray candidates 1334 | no other band covers 0
+12:45:11  [Stage 1c] P06: 1334 cosmic-ray candidates, keeping the brightest 1000 (detection.max_cr_candidates_per_pointing; they stay in the catalogue as Noise)
+12:45:21  [Stage 1c] P06: cosmic-ray pixels masked in 47 of 1863 target footprints (median 5.0 px)
+12:45:21  [Stage 1c] P06: 1863 sources | median SNR 20.1 | edge-flagged 226 | QC-flagged 23 | splits {'train': 1832, 'buffer': 31}
+12:45:21  [Stage 1c] P07: detecting on F775W ...
+WARNING: PhotutilsDeprecationWarning: 'progress_bar' was deprecated in version 3.1 and will be removed in version 4.0. [astropy.utils.decorators]
+12:45:42  [Stage 1c] P07: F435W vs F775W: 204 matched sources (peak 54.3x the random-pair level), offset [0.1777, -0.0676]" -> corrected (measured), residual [-0.0001, -0.0]" (dRA cos(dec), dDec)
+12:45:48  [Stage 1c] P07: F606W vs F775W: 232 matched sources (peak 14.7x the random-pair level), offset [-0.0087, 0.0131]" -> corrected (measured), residual [-0.0, 0.0]" (dRA cos(dec), dDec)
+12:45:54  [Stage 1c] P07: 52779 detections | confirmed by another band 6392 | cosmic-ray candidates 46172 | no other band covers 215
+12:45:54  [Stage 1c] P07: 46172 cosmic-ray candidates, keeping the brightest 1000 (detection.max_cr_candidates_per_pointing; they stay in the catalogue as Noise)
+12:46:56  [Stage 1c] P07: cosmic-ray pixels masked in 4962 of 7607 target footprints (median 13.0 px)
+12:46:57  [Stage 1c] P07: 7607 sources | median SNR 30.2 | edge-flagged 713 | QC-flagged 183 | splits {'dev': 3470, 'external': 2110, 'train': 1242, 'buffer': 785}
+12:46:57  [Stage 1c] P08: detecting on F775W ...
+WARNING: PhotutilsDeprecationWarning: 'progress_bar' was deprecated in version 3.1 and will be removed in version 4.0. [astropy.utils.decorators]
+12:47:15  [Stage 1c] P08: F435W vs F775W: 372 matched sources (peak 209.6x the random-pair level), offset [0.0543, 0.9383]" -> corrected (measured), residual [-0.0001, 0.0]" (dRA cos(dec), dDec)
+12:47:21  [Stage 1c] P08: F606W vs F775W: 405 matched sources (peak 229.1x the random-pair level), offset [-0.0111, -0.0144]" -> corrected (measured), residual [0.0, -0.0]" (dRA cos(dec), dDec)
+12:47:25  [Stage 1c] P08: 1935 detections | confirmed by another band 927 | cosmic-ray candidates 951 | no other band covers 57
+12:47:34  [Stage 1c] P08: cosmic-ray pixels masked in 38 of 1935 target footprints (median 6.0 px)
+12:47:35  [Stage 1c] P08: 1935 sources | median SNR 17.9 | edge-flagged 223 | QC-flagged 11 | splits {'external': 1758, 'buffer': 177}
+12:47:35  [Stage 1c] P09: detecting on F775W ...
+WARNING: PhotutilsDeprecationWarning: 'progress_bar' was deprecated in version 3.1 and will be removed in version 4.0. [astropy.utils.decorators]
+12:47:53  [Stage 1c] P09: F435W vs F775W: 442 matched sources (peak 184.2x the random-pair level), offset [0.973, 1.8074]" -> corrected (measured), residual [-0.0001, 0.0]" (dRA cos(dec), dDec)
+12:47:59  [Stage 1c] P09: F606W vs F775W: 521 matched sources (peak 216.4x the random-pair level), offset [-0.0227, 0.0058]" -> corrected (measured), residual [0.0, 0.0]" (dRA cos(dec), dDec)
+12:48:03  [Stage 1c] P09: 3011 detections | confirmed by another band 1387 | cosmic-ray candidates 1624 | no other band covers 0
+12:48:03  [Stage 1c] P09: 1624 cosmic-ray candidates, keeping the brightest 1000 (detection.max_cr_candidates_per_pointing; they stay in the catalogue as Noise)
+12:48:16  [Stage 1c] P09: cosmic-ray pixels masked in 82 of 2387 target footprints (median 8.0 px)
+12:48:16  [Stage 1c] P09: 2387 sources | median SNR 21.3 | edge-flagged 272 | QC-flagged 10 | splits {'train': 1113, 'dev': 1025, 'buffer': 249}
+12:48:16  [Stage 1c] P10: detecting on F775W ...
+WARNING: PhotutilsDeprecationWarning: 'progress_bar' was deprecated in version 3.1 and will be removed in version 4.0. [astropy.utils.decorators]
+12:48:47  [Stage 1c] P10: F435W vs F775W: 145 matched sources (peak 11.7x the random-pair level), offset [1.2171, 1.9524]" -> corrected (measured), residual [-0.0002, 0.0]" (dRA cos(dec), dDec)
+12:48:55  [Stage 1c] P10: F606W vs F775W: 358 matched sources (peak 33.0x the random-pair level), offset [-0.0068, -0.004]" -> no correction, residual [-0.0068, -0.004]" (dRA cos(dec), dDec)
+12:49:01  [Stage 1c] P10: 22540 detections | confirmed by another band 3056 | cosmic-ray candidates 19483 | no other band covers 1
+12:49:01  [Stage 1c] P10: 19483 cosmic-ray candidates, keeping the brightest 1000 (detection.max_cr_candidates_per_pointing; they stay in the catalogue as Noise)
+12:49:34  [Stage 1c] P10: cosmic-ray pixels masked in 2515 of 4057 target footprints (median 16.0 px)
+12:49:35  [Stage 1c] P10: 4057 sources | median SNR 40.5 | edge-flagged 290 | QC-flagged 69 | splits {'train': 3588, 'buffer': 469}
+12:49:35  [Stage 1c] P11: detecting on F775W ...
+WARNING: PhotutilsDeprecationWarning: 'progress_bar' was deprecated in version 3.1 and will be removed in version 4.0. [astropy.utils.decorators]
+12:49:53  [Stage 1c] P11: F435W vs F775W: 387 matched sources (peak 212.6x the random-pair level), offset [-0.9269, -1.2118]" -> corrected (measured), residual [0.0002, -0.0]" (dRA cos(dec), dDec)
+12:49:59  [Stage 1c] P11: F606W vs F775W: 430 matched sources (peak 241.9x the random-pair level), offset [0.002, -0.0057]" -> no correction, residual [0.002, -0.0057]" (dRA cos(dec), dDec)
+12:50:04  [Stage 1c] P11: 2225 detections | confirmed by another band 1087 | cosmic-ray candidates 1137 | no other band covers 1
+12:50:04  [Stage 1c] P11: 1137 cosmic-ray candidates, keeping the brightest 1000 (detection.max_cr_candidates_per_pointing; they stay in the catalogue as Noise)
+12:50:14  [Stage 1c] P11: cosmic-ray pixels masked in 56 of 2088 target footprints (median 5.0 px)
+12:50:15  [Stage 1c] P11: 2088 sources | median SNR 17.8 | edge-flagged 241 | QC-flagged 24 | splits {'train': 1924, 'test': 90, 'buffer': 74}
+12:50:15  [Stage 1c] P12: detecting on F775W ...
+WARNING: PhotutilsDeprecationWarning: 'progress_bar' was deprecated in version 3.1 and will be removed in version 4.0. [astropy.utils.decorators]
+12:50:34  [Stage 1c] P12: F435W vs F775W: 399 matched sources (peak 210.6x the random-pair level), offset [-0.0006, 0.0747]" -> corrected (measured), residual [0.0001, 0.0]" (dRA cos(dec), dDec)
+12:50:39  [Stage 1c] P12: F606W vs F775W: 459 matched sources (peak 240.0x the random-pair level), offset [-0.9806, 2.3989]" -> corrected (measured), residual [-0.0003, 0.0]" (dRA cos(dec), dDec)
+12:50:44  [Stage 1c] P12: 3093 detections | confirmed by another band 1172 | cosmic-ray candidates 1921 | no other band covers 0
+12:50:44  [Stage 1c] P12: 1921 cosmic-ray candidates, keeping the brightest 1000 (detection.max_cr_candidates_per_pointing; they stay in the catalogue as Noise)
+12:50:55  [Stage 1c] P12: cosmic-ray pixels masked in 94 of 2172 target footprints (median 8.0 px)
+12:50:55  [Stage 1c] P12: 2172 sources | median SNR 22.4 | edge-flagged 281 | QC-flagged 20 | splits {'train': 1360, 'buffer': 305, 'test': 283, 'external': 224}
+12:50:55  [Stage 1c] P13: detecting on F775W ...
+WARNING: PhotutilsDeprecationWarning: 'progress_bar' was deprecated in version 3.1 and will be removed in version 4.0. [astropy.utils.decorators]
+12:51:14  [Stage 1c] P13: F435W vs F775W: 348 matched sources (peak 204.7x the random-pair level), offset [-0.0135, -0.0422]" -> corrected (measured), residual [0.0, -0.0]" (dRA cos(dec), dDec)
+12:51:19  [Stage 1c] P13: F606W vs F775W: 404 matched sources (peak 244.1x the random-pair level), offset [0.0051, -0.0057]" -> no correction, residual [0.0051, -0.0057]" (dRA cos(dec), dDec)
+12:51:24  [Stage 1c] P13: 2691 detections | confirmed by another band 1132 | cosmic-ray candidates 1559 | no other band covers 0
+12:51:24  [Stage 1c] P13: 1559 cosmic-ray candidates, keeping the brightest 1000 (detection.max_cr_candidates_per_pointing; they stay in the catalogue as Noise)
+12:51:34  [Stage 1c] P13: cosmic-ray pixels masked in 78 of 2132 target footprints (median 8.0 px)
+12:51:35  [Stage 1c] P13: 2132 sources | median SNR 21.3 | edge-flagged 271 | QC-flagged 61 | splits {'test': 1301, 'external': 612, 'buffer': 219}
+12:51:35  [Stage 1c] P14: detecting on F775W ...
+WARNING: PhotutilsDeprecationWarning: 'progress_bar' was deprecated in version 3.1 and will be removed in version 4.0. [astropy.utils.decorators]
+12:51:53  [Stage 1c] P14: F435W vs F775W: 322 matched sources (peak 205.8x the random-pair level), offset [-0.8396, -1.7159]" -> corrected (measured), residual [0.0008, -0.0003]" (dRA cos(dec), dDec)
+12:51:59  [Stage 1c] P14: F606W vs F775W: 400 matched sources (peak 224.1x the random-pair level), offset [-0.8183, -1.7019]" -> corrected (measured), residual [-0.0002, 0.0]" (dRA cos(dec), dDec)
+12:52:03  [Stage 1c] P14: 2216 detections | confirmed by another band 1024 | cosmic-ray candidates 1192 | no other band covers 0
+12:52:03  [Stage 1c] P14: 1192 cosmic-ray candidates, keeping the brightest 1000 (detection.max_cr_candidates_per_pointing; they stay in the catalogue as Noise)
+12:52:13  [Stage 1c] P14: cosmic-ray pixels masked in 66 of 2024 target footprints (median 8.0 px)
+12:52:14  [Stage 1c] P14: 2024 sources | median SNR 18.7 | edge-flagged 280 | QC-flagged 85 | splits {'train': 1866, 'buffer': 96, 'external': 46, 'test': 16}
+12:52:23  [Stage 1c] 43015 sources total -> sources.csv, cutouts_raw.npy (43015, 3, 128, 128)
+12:52:23  [Stage 1c] ok in 738.3 s
+12:52:23  ==============================================================================
+12:52:23  Stage 1d - Cross-filter PSF homogenisation
+12:52:23  ==============================================================================
+/Users/sangeet516a/Documents/pixels2provenance/src/p2p/stages/stage1d_psf_match.py:215: DtypeWarning: Columns (33: cr_candidate) have mixed types. Specify dtype option on import or set low_memory=False.
+  src = pd.read_csv(ctx.require("1c", "sources.csv"))
+12:52:33  [Stage 1d] P01: stars=22 FWHM(px)={'F435W': 2.338, 'F606W': 2.661, 'F775W': 2.633} -> target F606W; after matching {'F435W': 2.661, 'F775W': 2.661}
+12:52:33  [Stage 1d] P02: 0 PSF stars here - PSFs borrowed from a pointing with the same camera, filter and pixel scale: {'F435W': 'borrowed from P10 (10 stars; only 0 here)', 'F606W': 'borrowed from P01 (17 stars; only 0 here)', 'F775W': 'borrowed from P01 (22 stars; only 0 here)'}
+12:52:35  [Stage 1d] P02: stars=0 FWHM(px)={'F435W': 2.592, 'F606W': 2.661, 'F775W': 2.633} -> target F606W; after matching {'F435W': 2.661, 'F775W': 2.661}
+12:52:35  [Stage 1d] P03: 4 PSF stars here - PSFs borrowed from a pointing with the same camera, filter and pixel scale: {'F435W': 'borrowed from P10 (10 stars; only 4 here)', 'F606W': 'borrowed from P01 (17 stars; only 4 here)', 'F775W': 'borrowed from P01 (22 stars; only 4 here)'}
+12:52:36  [Stage 1d] P03: stars=4 FWHM(px)={'F435W': 2.592, 'F606W': 2.661, 'F775W': 2.633} -> target F606W; after matching {'F435W': 2.661, 'F775W': 2.661}
+12:52:36  [Stage 1d] P04: 0 PSF stars here - PSFs borrowed from a pointing with the same camera, filter and pixel scale: {'F435W': 'borrowed from P10 (10 stars; only 0 here)', 'F606W': 'borrowed from P01 (17 stars; only 0 here)', 'F775W': 'borrowed from P01 (22 stars; only 0 here)'}
+12:52:38  [Stage 1d] P04: stars=0 FWHM(px)={'F435W': 2.592, 'F606W': 2.661, 'F775W': 2.633} -> target F606W; after matching {'F435W': 2.661, 'F775W': 2.661}
+12:52:39  [Stage 1d] P05: stars=6 FWHM(px)={'F435W': 2.57, 'F606W': 2.53, 'F775W': 2.536} -> target F435W; after matching {'F606W': 2.57, 'F775W': 2.57}
+12:52:41  [Stage 1d] P06: stars=5 FWHM(px)={'F435W': 2.787, 'F606W': 2.458, 'F775W': 2.517} -> target F435W; after matching {'F606W': 2.787, 'F775W': 2.787}
+12:52:41  [Stage 1d] P07: 5 PSF stars here - PSFs borrowed from a pointing with the same camera, filter and pixel scale: {'F435W': 'borrowed from P10 (10 stars; only 4 here)', 'F606W': 'borrowed from P01 (17 stars; only 4 here)'}
+12:52:47  [Stage 1d] P07: stars=5 FWHM(px)={'F775W': 2.6, 'F435W': 2.592, 'F606W': 2.661} -> target F606W; after matching {'F775W': 2.661, 'F435W': 2.661}
+12:52:47  [Stage 1d] P08: 4 PSF stars here - PSFs borrowed from a pointing with the same camera, filter and pixel scale: {'F435W': 'borrowed from P10 (10 stars; only 4 here)', 'F606W': 'borrowed from P01 (17 stars; only 4 here)', 'F775W': 'borrowed from P01 (22 stars; only 4 here)'}
+12:52:48  [Stage 1d] P08: stars=4 FWHM(px)={'F435W': 2.592, 'F606W': 2.661, 'F775W': 2.633} -> target F606W; after matching {'F435W': 2.661, 'F775W': 2.661}
+12:52:48  [Stage 1d] P09: 3 PSF stars here - PSFs borrowed from a pointing with the same camera, filter and pixel scale: {'F435W': 'borrowed from P10 (10 stars; only 3 here)', 'F606W': 'borrowed from P01 (17 stars; only 3 here)', 'F775W': 'borrowed from P01 (22 stars; only 3 here)'}
+12:52:51  [Stage 1d] P09: stars=3 FWHM(px)={'F435W': 2.592, 'F606W': 2.661, 'F775W': 2.633} -> target F606W; after matching {'F435W': 2.661, 'F775W': 2.661}
+12:52:54  [Stage 1d] P10: stars=11 FWHM(px)={'F435W': 2.592, 'F606W': 2.729, 'F775W': 2.646} -> target F606W; after matching {'F435W': 2.729, 'F775W': 2.729}
+12:52:54  [Stage 1d] P11: 3 PSF stars here - PSFs borrowed from a pointing with the same camera, filter and pixel scale: {'F435W': 'borrowed from P10 (10 stars; only 3 here)', 'F606W': 'borrowed from P01 (17 stars; only 3 here)', 'F775W': 'borrowed from P01 (22 stars; only 3 here)'}
+12:52:55  [Stage 1d] P11: stars=3 FWHM(px)={'F435W': 2.592, 'F606W': 2.661, 'F775W': 2.633} -> target F606W; after matching {'F435W': 2.661, 'F775W': 2.661}
+12:52:57  [Stage 1d] P12: stars=5 FWHM(px)={'F435W': 2.478, 'F606W': 2.521, 'F775W': 2.511} -> target F606W; after matching {'F435W': 2.521, 'F775W': 2.511}
+12:52:59  [Stage 1d] P13: stars=5 FWHM(px)={'F435W': 2.636, 'F606W': 2.646, 'F775W': 2.594} -> target F606W; after matching {'F435W': 2.636, 'F775W': 2.646}
+12:52:59  [Stage 1d] P14: 4 PSF stars here - PSFs borrowed from a pointing with the same camera, filter and pixel scale: {'F435W': 'borrowed from P10 (10 stars; only 4 here)', 'F606W': 'borrowed from P01 (17 stars; only 4 here)', 'F775W': 'borrowed from P01 (22 stars; only 4 here)'}
+12:53:01  [Stage 1d] P14: stars=4 FWHM(px)={'F435W': 2.592, 'F606W': 2.661, 'F775W': 2.633} -> target F606W; after matching {'F435W': 2.661, 'F775W': 2.661}
+12:53:02  [Stage 1d] ok in 39.4 s
+12:53:02  ==============================================================================
+12:53:02  Stage 1e - Pass-1 photometry and morphology
+12:53:02  ==============================================================================
+/Users/sangeet516a/Documents/pixels2provenance/src/p2p/stages/stage1e_pass1_morphology.py:49: DtypeWarning: Columns (33: cr_candidate) have mixed types. Specify dtype option on import or set low_memory=False.
+  src = pd.read_csv(ctx.require("1c", "sources.csv"))
+12:53:02  [Stage 1e] measuring 43008 of 43015 sources (SNR >= 3.0) with statmorph on 8 worker(s) ...
+[Parallel(n_jobs=8)]: Using backend LokyBackend with 8 concurrent workers.
+[Parallel(n_jobs=8)]: Done  2 out of 32 | elapsed: 10.3min
+[Parallel(n_jobs=8)]: Done 24 out of 32 | elapsed: 33.3min remaining: 11.1min
+[Parallel(n_jobs=8)]: Done 32 out of 32 | elapsed: 42.8min finished
+13:37:38  [Stage 1e] PSF FWHM (Gaussian fit, detection band) per pointing: {'P01': 2.633, 'P02': 2.633, 'P03': 2.633, 'P04': 2.633, 'P05': 2.536, 'P06': 2.517, 'P07': 2.6, 'P08': 2.633, 'P09': 2.633, 'P10': 2.646, 'P11': 2.633, 'P12': 2.511, 'P13': 2.594, 'P14': 2.633} px | fwhm_over_psf median 0.81, share point-like (0.8-1.2) 17.6%
+13:37:38  [Stage 1e] flags: {0.0: 10254, 1.0: 18409, 2.0: 13640, 4.0: 712} | median Gini 0.497, C 2.27, A 0.107, n 1.10
+13:37:39  [Stage 1e] ok in 2676.4 s
+13:37:39  ==============================================================================
+13:37:39  Stage 2a - Representation learning + fusion
+13:37:39  ==============================================================================
+/Users/sangeet516a/Documents/pixels2provenance/src/p2p/context.py:179: DtypeWarning: Columns (33: cr_candidate) have mixed types. Specify dtype option on import or set low_memory=False.
+  t = pd.read_csv(ctx.require(key, name))
+13:37:47  [Stage 2a] background sigma per band (data units) {'P01': [0.002559, 0.004818, 0.0039], 'P02': [0.003029, 0.005755, 0.005292], 'P03': [0.001455, 0.006147, 0.00536], 'P04': [0.001452, 0.005779, 0.005331], 'P05': [0.001457, 0.005771, 0.00538], 'P06': [0.001457, 0.004352, 0.004352], 'P07': [0.001756, 0.00496, 0.005426], 'P08': [0.001451, 0.005171, 0.005086], 'P09': [0.001516, 0.006423, 0.004865], 'P10': [0.003308, 0.008042, 0.006945], 'P11': [0.001464, 0.006237, 0.004697], 'P12': [0.001619, 0.006241, 0.004791], 'P13': [0.001624, 0.006358, 0.004843], 'P14': [0.001676, 0.005286, 0.005751]}
+13:38:52  [Stage 2a] cutouts without data per band: [9.0, 4.1, 0.0] % (fed to the CAE as 'data present' channels)
+13:38:53  [Stage 2a] training representation CAE v2 (3 bands + presence masks -> 32-d, 261,667 weights) on 20592 train cutouts, validation 5265 (mps); at most 100 epochs, early stopping after 10 epochs without a 0.5% improvement
+13:40:27    [Rep-CAE] epoch   1  train 0.00611  val 0.00773  lr 1.0e-03  no gain 0/10  *
+13:41:51    [Rep-CAE] epoch   2  train 0.00440  val 0.00736  lr 1.0e-03  no gain 0/10  *
+13:43:13    [Rep-CAE] epoch   3  train 0.00427  val 0.00734  lr 1.0e-03  no gain 1/10
+13:44:21    [Rep-CAE] epoch   4  train 0.00429  val 0.00733  lr 1.0e-03  no gain 2/10
+13:45:23    [Rep-CAE] epoch   5  train 0.00419  val 0.00729  lr 1.0e-03  no gain 0/10  *
+13:46:29    [Rep-CAE] epoch   6  train 0.00413  val 0.00730  lr 1.0e-03  no gain 1/10
+13:47:37    [Rep-CAE] epoch   7  train 0.00417  val 0.00719  lr 1.0e-03  no gain 0/10  *
+13:48:51    [Rep-CAE] epoch   8  train 0.00412  val 0.00721  lr 1.0e-03  no gain 1/10
+13:49:57    [Rep-CAE] epoch   9  train 0.00410  val 0.00717  lr 1.0e-03  no gain 2/10
+13:51:01    [Rep-CAE] epoch  10  train 0.00405  val 0.00715  lr 1.0e-03  no gain 0/10  *
+13:52:08    [Rep-CAE] epoch  11  train 0.00402  val 0.00713  lr 1.0e-03  no gain 1/10
+13:53:11    [Rep-CAE] epoch  12  train 0.00403  val 0.00714  lr 1.0e-03  no gain 2/10
+13:54:15    [Rep-CAE] epoch  13  train 0.00401  val 0.00710  lr 1.0e-03  no gain 0/10  *
+13:55:26    [Rep-CAE] epoch  14  train 0.00396  val 0.00707  lr 1.0e-03  no gain 1/10
+13:56:32    [Rep-CAE] epoch  15  train 0.00401  val 0.00711  lr 1.0e-03  no gain 2/10
+13:57:38    [Rep-CAE] epoch  16  train 0.00399  val 0.00709  lr 1.0e-03  no gain 3/10
+13:58:40    [Rep-CAE] epoch  17  train 0.00395  val 0.00710  lr 1.0e-03  no gain 4/10
+13:59:44    [Rep-CAE] epoch  18  train 0.00400  val 0.00707  lr 1.0e-03  no gain 0/10  *
+14:01:04    [Rep-CAE] epoch  19  train 0.00394  val 0.00706  lr 1.0e-03  no gain 1/10
+14:02:08    [Rep-CAE] epoch  20  train 0.00392  val 0.00705  lr 1.0e-03  no gain 2/10
+14:03:08    [Rep-CAE] epoch  21  train 0.00396  val 0.00711  lr 1.0e-03  no gain 3/10
+14:04:07    [Rep-CAE] epoch  22  train 0.00391  val 0.00709  lr 1.0e-03  no gain 4/10
+14:05:05    [Rep-CAE] epoch  23  train 0.00394  val 0.00704  lr 1.0e-03  no gain 5/10
+14:06:02    [Rep-CAE] epoch  24  train 0.00388  val 0.00706  lr 1.0e-03  no gain 6/10
+14:06:58    [Rep-CAE] epoch  25  train 0.00390  val 0.00705  lr 1.0e-03  no gain 7/10
+14:07:55    [Rep-CAE] epoch  26  train 0.00389  val 0.00706  lr 1.0e-03  no gain 8/10
+14:08:52    [Rep-CAE] epoch  27  train 0.00390  val 0.00703  lr 1.0e-03  no gain 9/10
+14:09:49    [Rep-CAE] epoch  28  train 0.00392  val 0.00709  lr 1.0e-03  no gain 10/10
+14:09:49    [Rep-CAE] early stop: validation loss not improved by 0.5% for 10 epochs
+14:09:49  [Stage 2a] best validation loss 0.00707 at epoch 18 of 28
+14:11:18  [Stage 2a] reconstruction gain over a flat per-band image: {'train_median': 0.166, 'train_fraction_better': 0.995, 'dev_median': 0.065, 'dev_fraction_better': 0.965}
+14:11:21  [Stage 2a] parallel analysis: 5 components above the 95th percentile of shuffled-data eigenvalues -> n_pca = 5 (cap n_pca_max 12)
+14:11:24  [Stage 2a] largest |Spearman rho| between a kept component and a band background level: 0.45 (the original CAE: 0.98)
+14:11:24  [Stage 2a] linear probe vs number of components (information kept): {'2': {'cosmic_ray_candidate': 0.607, 'extended_vs_pointlike': 0.865}, '4': {'cosmic_ray_candidate': 0.699, 'extended_vs_pointlike': 0.852}, '5': {'cosmic_ray_candidate': 0.713, 'extended_vs_pointlike': 0.852}, '12': {'cosmic_ray_candidate': 0.733, 'extended_vs_pointlike': 0.85}, '32': {'cosmic_ray_candidate': 0.748, 'extended_vs_pointlike': 0.857}}
+14:11:24  [Stage 2a] linear probe on the kept components (train -> dev, balanced accuracy): {'cosmic_ray_candidate': 0.715, 'extended_vs_pointlike': 0.852}
+14:11:24  [Stage 2a] hybrid matrix (43015, 19) | tabular kept ['fwhm_over_psf', 'band_consistency', 'gini', 'm20', 'concentration', 'asymmetry', 'smoothness', 'sersic_n', 'r_half', 'ellipticity', 'mag', 'snr', 'colour_1', 'colour_2'] | PCA keeps 52.3% of latent variance
+14:11:24  [Stage 2a] ok in 2025.6 s
+14:11:24  ==============================================================================
+14:11:24  Stage 2b - Unsupervised clustering
+14:11:24  ==============================================================================
+/Users/sangeet516a/Documents/pixels2provenance/src/p2p/stages/stage2b_clustering.py:67: DtypeWarning: Columns (33: cr_candidate) have mixed types. Specify dtype option on import or set low_memory=False.
+  src = pd.read_csv(ctx.require("1c", "sources.csv")).set_index("object_id").loc[oid]
+14:11:25  [Stage 2b] 161 of 20592 train sources are too faint for morphology (their shape features are median-filled, so they sit on top of each other)
+14:11:25    [GMM full] k= 2  BIC=29668.7  ICL=29990.7  AIC=26344.9  dev log-lik/object=-6.552
+14:11:26    [GMM full] k= 3  BIC=-78974.2  ICL=-77963.5  AIC=-83963.9  dev log-lik/object=-4.534
+14:11:26    [GMM full] k= 4  BIC=-138719.1  ICL=-137369.8  AIC=-145374.6  dev log-lik/object=-2.818
+14:11:27    [GMM full] k= 5  BIC=-180231.9  ICL=-178595.1  AIC=-188553.2  dev log-lik/object=-2.155
+14:11:28    [GMM full] k= 6  BIC=-195006.8  ICL=-192882.7  AIC=-204994.0  dev log-lik/object=-1.815
+14:11:29    [GMM full] k= 7  BIC=-203791.8  ICL=-200843.0  AIC=-215444.9  dev log-lik/object=-1.512
+14:11:31    [GMM full] k= 8  BIC=-219163.7  ICL=-216169.5  AIC=-232482.7  dev log-lik/object=-1.353
+14:11:33    [GMM full] k= 9  BIC=-228964.8  ICL=-225769.0  AIC=-243949.6  dev log-lik/object=-1.088
+14:11:35    [GMM full] k=10  BIC=-229843.6  ICL=-226290.7  AIC=-246494.3  dev log-lik/object=-1.008
+14:11:36    [GMM full] k=11  BIC=-250548.9  ICL=-246851.1  AIC=-268865.4  dev log-lik/object=-0.664
+14:11:38    [GMM full] k=12  BIC=-256236.5  ICL=-252135.1  AIC=-276218.8  dev log-lik/object=-0.569
+14:11:40    [GMM full] k=13  BIC=-254883.5  ICL=-250464.8  AIC=-276531.7  dev log-lik/object=-0.478
+14:11:43    [GMM full] k=14  BIC=-260363.2  ICL=-255644.0  AIC=-283677.3  dev log-lik/object=-0.395
+14:11:44    [GMM full] k=15  BIC=-262451.5  ICL=-257805.4  AIC=-287431.5  dev log-lik/object=-0.318
+14:11:47    [GMM full] k=16  BIC=-266099.0  ICL=-261516.7  AIC=-292744.8  dev log-lik/object=0.362
+14:11:50    [GMM full] k=17  BIC=-266496.4  ICL=-261819.3  AIC=-294808.1  dev log-lik/object=0.351
+14:11:53    [GMM full] k=18  BIC=-266999.2  ICL=-261814.3  AIC=-296976.7  dev log-lik/object=-0.101
+14:11:57    [GMM full] k=19  BIC=-269522.1  ICL=-264154.6  AIC=-301165.4  dev log-lik/object=0.398
+14:12:02    [GMM full] k=20  BIC=-274028.9  ICL=-268760.2  AIC=-307338.1  dev log-lik/object=0.465
+14:12:02  [Stage 2b] WARNING: BIC still falling at k_max=20; using the BIC elbow k=5. Raise clustering.k_max or check the features (correlated / tied values).
+14:12:09  [Stage 2b] GMM k = 5 (elbow (knee) of BIC - the BIC minimum is at the upper boundary of the range); ICL minimum k = 20; BIC elbow k = 5; BIC minimum with other seeds: {'7': 7, '1': 7}; bootstrap stability ARI [0.973, 0.468, 0.393]
+14:12:16    [HDBSCAN] min_cluster_size=411: 3 clusters, noise 63.9%, DBCV 0.0336, largest cluster 0.2892
+14:12:19    [HDBSCAN] min_cluster_size=205: 3 clusters, noise 63.9%, DBCV 0.0336, largest cluster 0.2892
+14:12:21    [HDBSCAN] min_cluster_size=102: 3 clusters, noise 63.9%, DBCV 0.0336, largest cluster 0.2892
+14:12:23    [HDBSCAN] min_cluster_size=10: 2 clusters, noise 0.0%, DBCV 0.3652, largest cluster 0.9984
+14:12:29  [Stage 2b] NOTE: one HDBSCAN cluster holds 100% of the train sources - the feature space is one density continuum with small islands, not separate populations; HDBSCAN is used for density outliers (GLOSH), the GMM for the populations.
+14:12:29  [Stage 2b] GMM check: k = 5; next-best k = 20 (BIC +-93797.0); dev log-likelihood peaks at k = 20; other seeds disagree: {'7': 7, '1': 7}; bootstrap ARI 0.611 -> moderately stable (>= 0.8 stable, 0.5-0.8 moderate). The exact k matters little: Stage 2d names clusters by evidence and several clusters can share a name.
+14:12:29  [Stage 2b] HDBSCAN check: DBCV 0.3652 (-1..1; < 0.1 = no density structure), 2 clusters, largest 100% of train -> none (one density continuum); used only for density outliers. Outlier rate by split: {'buffer': 0.176, 'dev': 0.213, 'external': 0.129, 'test': 0.176, 'train': 0.05} (train ~5 % by construction; buffer = collars and sources outside the three-band area)
+14:12:29  [Stage 2b] GMM k = 5; sizes {1: 9965, 2: 9791, 4: 8449, 0: 7904, 3: 6906}; HDBSCAN clusters = 2 (min_cluster_size 10); density outliers 11.5%
+14:12:29  [Stage 2b] ok in 65.1 s
+14:12:29  ==============================================================================
+14:12:29  Stage 2c - Baseline segregation + Gaia match
+14:12:29  ==============================================================================
+/Users/sangeet516a/Documents/pixels2provenance/src/p2p/context.py:179: DtypeWarning: Columns (33: cr_candidate) have mixed types. Specify dtype option on import or set low_memory=False.
+  t = pd.read_csv(ctx.require(key, name))
+14:12:30  [Stage 2c] Gaia: 722 sources in the footprint
+14:12:30  [Stage 2c] P01: Gaia offset removed dRA -0.00", dDec +0.00" -> 10 matches
+14:12:30  [Stage 2c] P02: Gaia offset removed dRA +0.00", dDec +0.00" -> 5 matches
+14:12:30  [Stage 2c] P03: Gaia offset removed dRA -0.67", dDec +1.56" -> 10 matches
+14:12:30  [Stage 2c] P04: Gaia offset removed dRA +0.00", dDec +0.00" -> 0 matches
+14:12:30  [Stage 2c] P05: Gaia offset removed dRA -0.00", dDec -0.00" -> 26 matches
+14:12:30  [Stage 2c] P06: Gaia offset removed dRA +0.00", dDec +0.00" -> 7 matches
+14:12:30  [Stage 2c] P07: Gaia offset removed dRA +0.06", dDec -0.02" -> 6 matches
+14:12:30  [Stage 2c] P08: Gaia offset removed dRA +0.00", dDec +0.00" -> 5 matches
+14:12:30  [Stage 2c] P09: Gaia offset removed dRA +0.00", dDec +0.00" -> 3 matches
+14:12:30  [Stage 2c] P10: Gaia offset removed dRA +0.00", dDec +0.00" -> 2 matches
+14:12:30  [Stage 2c] P11: Gaia offset removed dRA +0.43", dDec +1.10" -> 9 matches
+14:12:30  [Stage 2c] P12: Gaia offset removed dRA -0.02", dDec -0.07" -> 12 matches
+14:12:30  [Stage 2c] P13: Gaia offset removed dRA +0.42", dDec +1.10" -> 10 matches
+14:12:30  [Stage 2c] P14: Gaia offset removed dRA +0.81", dDec +1.71" -> 10 matches
+14:12:30  [Stage 2c] baseline: {'Noise': 23774, 'Galaxy': 16200, 'Star': 3041} | Gaia matches 118 (Gaia leg on)
+14:12:30  [Stage 2c] ok in 0.5 s
+14:12:30  ==============================================================================
+14:12:30  Stage 2d - Semantic audit
+14:12:30  ==============================================================================
+/Users/sangeet516a/Documents/pixels2provenance/src/p2p/context.py:179: DtypeWarning: Columns (33: cr_candidate) have mixed types. Specify dtype option on import or set low_memory=False.
+  t = pd.read_csv(ctx.require(key, name))
+14:12:31  [Stage 2d] GZH positions: 4403 matches (offset per pointing removed: P01 (+0.14", -0.26"), P02 (+0.07", -0.31"), P03 (-0.56", +1.36"), P04 (+0.09", +2.51"), P05 (+0.06", -0.35"), P06 (+0.06", -0.16"), P07 (+0.08", -0.31"), P08 (-0.02", -0.35"), P09 (-0.11", -0.36"), P10 (-0.03", -0.31"), P11 (+0.51", +0.82"), P12 (+0.03", -0.39"), P13 (+0.49", +0.76"), P14 (+0.87", +1.34"))
+14:12:31  [Stage 2d] galaxy evidence: 4403 GZH + 8831 resolved and confirmed in a second band
+14:12:31  [Stage 2d] star evidence: 118 Gaia + 137 on the stellar locus (point-like or saturated, confirmed in a second band)
+14:12:31  [Stage 2d] external validation of the clusterings (held-out objects with exactly one evidence signal): {'gmm': {'purity': 0.902, 'purity_gain_over_majority': 0.19, 'nmi_vs_evidence': 0.321}, 'hdbscan': {'purity': 0.712, 'purity_gain_over_majority': 0.0, 'nmi_vs_evidence': 0.003}, 'majority_class_share': 0.712}
+14:12:33  [Stage 2d] cluster evidence (share of members with each signal):
+          Star  Galaxy  Noise  n_train     n semantic
+cluster                                              
+0        0.011   0.948  0.003     5408  7904   Galaxy
+1        0.003   0.077  0.700     3248  9965    Noise
+2        0.006   0.038  0.871     3553  9791    Noise
+3        0.015   0.830  0.116     3094  6906     Star
+4        0.000   0.001  0.978     5289  8449    Noise
+14:12:33  [Stage 2d] stars vs Gaia (held-out, in range, n=40): learned P=0.347 R=0.65 F1=0.452 | baseline P=0.615 R=0.6 F1=0.608 | Objective-2 minimum met: False
+14:12:33  [Stage 2d] ok in 2.9 s
+14:12:33  ==============================================================================
+14:12:33  Stage 2e - Continuum handling + outlier gating
+14:12:33  ==============================================================================
+/Users/sangeet516a/Documents/pixels2provenance/src/p2p/context.py:179: DtypeWarning: Columns (33: cr_candidate) have mixed types. Specify dtype option on import or set low_memory=False.
+  t = pd.read_csv(ctx.require(key, name))
+14:12:33  [Stage 2e] low-density objects (HDBSCAN noise / GLOSH outliers): 4946
+14:12:33  [Stage 2e] physical gate: {'Noise cluster, but a real source (confirmed in 2 bands, SNR >= 5, not sharper than the PSF)': 4697, 'Star cluster, but broader than a point source': 4663, 'Star cluster, but sharper than the PSF': 1156, 'Star cluster, but too faint for size to separate a star from a compact galaxy': 777, 'cosmic-ray candidate (no second band confirms it)': 258, 'Galaxy cluster, but on the stellar locus': 98, 'Noise cluster, but confirmed in 2 bands on the stellar locus': 78, 'transitional (low density in HDBSCAN, GMM galaxy posterior >= transitional_p)': 16, 'Gaia star': 2}
+14:12:33  [Stage 2e] artefact rules: {'bright_stars': 95, 'saturated_star': 3, 'bright_star_artefact': 380, 'unresolved_to_noise': 1423}
+14:18:37  [Stage 2e] cosmic-ray gate: 2698 of 16114 galaxies -> Noise (cr_gate_fraction 0.7)
+14:18:37  [Stage 2e] deblending fragments (inside a brighter galaxy's half-light radius): 860 -> fragment_of, left out of the galaxy track
+14:18:37  [Stage 2e] populations {'Noise': 29345, 'Galaxy': 13416, 'Star': 254} | transitional kept 18 | anomalies logged 0 (recon threshold 0.00934)
+14:18:37  [Stage 2e] ok in 364.6 s
+14:18:37  ==============================================================================
+14:18:37  Stage 3a - GZH label anchoring
+14:18:37  ==============================================================================
+/Users/sangeet516a/Documents/pixels2provenance/src/p2p/context.py:179: DtypeWarning: Columns (33: cr_candidate) have mixed types. Specify dtype option on import or set low_memory=False.
+  t = pd.read_csv(ctx.require(key, name))
+14:18:38  [Stage 3a] galaxy track 12556 | GZH-matched 4254 | unmatched 8302 | offset removed per pointing: P01 (+0.14", -0.26"), P02 (+0.07", -0.31"), P03 (-0.56", +1.36"), P04 (+0.09", +2.51"), P05 (+0.06", -0.35"), P06 (+0.06", -0.16"), P07 (+0.08", -0.31"), P08 (-0.01", -0.35"), P09 (-0.12", -0.36"), P10 (-0.03", -0.31"), P11 (+0.51", +0.82"), P12 (+0.03", -0.39"), P13 (+0.49", +0.76"), P14 (+0.87", +1.34")
+14:18:38  [Stage 3a] labelled galaxies per split / class:
+gz_label   Ambiguous  EdgeOn  FaceOnSpiral  Irregular  Smooth
+split_tag                                                    
+buffer            48      83            56        100      30
+dev               39      76            80         72      43
+external          55     101           121        123      68
+test              47      72            82         89      47
+train            391     667           633        796     335
+14:18:38  [Stage 3a] ok in 1.2 s
+14:18:38  ==============================================================================
+14:18:38  Stage 3b - Star calibration routing
+14:18:38  ==============================================================================
+/Users/sangeet516a/Documents/pixels2provenance/src/p2p/context.py:179: DtypeWarning: Columns (33: cr_candidate) have mixed types. Specify dtype option on import or set low_memory=False.
+  t = pd.read_csv(ctx.require(key, name))
+14:18:39  [Stage 3b] P02: only 3 Gaia-confirmed clean stars - using all 8 clean stars of the star track for the ePSF
+14:18:39  [Stage 3b] P08: only 4 Gaia-confirmed clean stars - using all 8 clean stars of the star track for the ePSF
+14:18:39  [Stage 3b] P09: only 3 Gaia-confirmed clean stars - using all 7 clean stars of the star track for the ePSF
+14:18:39  [Stage 3b] P10: only 2 Gaia-confirmed clean stars - using all 16 clean stars of the star track for the ePSF
+14:18:39  [Stage 3b] candidates 254 (star track + Gaia) | Gaia 118 | point-like 209 | confirmed in 2 bands 254 | SNR ok 252 | unsaturated 252 | isolated 247 | routed to ePSF 127 {'P01': 9, 'P02': 8, 'P03': 7, 'P04': 9, 'P05': 20, 'P06': 6, 'P07': 6, 'P08': 8, 'P09': 7, 'P10': 16, 'P11': 7, 'P12': 8, 'P13': 7, 'P14': 9}
+14:18:39  [Stage 3b] ok in 0.5 s
+14:18:39  ==============================================================================
+14:18:39  Stage 3c - Noise false-positive model
+14:18:39  ==============================================================================
+/Users/sangeet516a/Documents/pixels2provenance/src/p2p/context.py:179: DtypeWarning: Columns (33: cr_candidate) have mixed types. Specify dtype option on import or set low_memory=False.
+  t = pd.read_csv(ctx.require(key, name))
+WARNING: NoDetectionsWarning: No sources were found. Try lowering the threshold or n_pixels parameters. [photutils.segmentation.detect]
+14:19:04  [Stage 3c] P01: FPR <= 0.01 from 3.50 sigma; FPR at the detection threshold (2.0 sigma) = 0.017; no negative detection above 599.1 sigma (FPR resolution there: 1/59)
+WARNING: NoDetectionsWarning: No sources were found. Try lowering the threshold or n_pixels parameters. [photutils.segmentation.detect]
+14:19:13  [Stage 3c] P02: FPR <= 0.01 from 1.50 sigma; FPR at the detection threshold (2.0 sigma) = 0.000; no negative detection above 1.5 sigma (FPR resolution there: 1/2730)
+WARNING: NoDetectionsWarning: No sources were found. Try lowering the threshold or n_pixels parameters. [photutils.segmentation.detect]
+14:19:22  [Stage 3c] P03: FPR <= 0.01 from 1.50 sigma; FPR at the detection threshold (2.0 sigma) = 0.000; no negative detection above 1.5 sigma (FPR resolution there: 1/3580)
+WARNING: NoDetectionsWarning: No sources were found. Try lowering the threshold or n_pixels parameters. [photutils.segmentation.detect]
+14:19:32  [Stage 3c] P04: FPR <= 0.01 from 1.50 sigma; FPR at the detection threshold (2.0 sigma) = 0.000; no negative detection above 1.5 sigma (FPR resolution there: 1/2547)
+WARNING: NoDetectionsWarning: No sources were found. Try lowering the threshold or n_pixels parameters. [photutils.segmentation.detect]
+14:19:41  [Stage 3c] P05: FPR <= 0.01 from 1.50 sigma; FPR at the detection threshold (2.0 sigma) = 0.000; no negative detection above 1.5 sigma (FPR resolution there: 1/3089)
+WARNING: NoDetectionsWarning: No sources were found. Try lowering the threshold or n_pixels parameters. [photutils.segmentation.detect]
+14:19:50  [Stage 3c] P06: FPR <= 0.01 from 1.50 sigma; FPR at the detection threshold (2.0 sigma) = 0.000; no negative detection above 1.5 sigma (FPR resolution there: 1/3246)
+WARNING: NoDetectionsWarning: No sources were found. Try lowering the threshold or n_pixels parameters. [photutils.segmentation.detect]
+14:20:08  [Stage 3c] P07: FPR <= 0.01 from 7783.70 sigma; FPR at the detection threshold (2.0 sigma) = 1.000; no negative detection above 5337.6 sigma (FPR resolution there: 1/1)
+WARNING: NoDetectionsWarning: No sources were found. Try lowering the threshold or n_pixels parameters. [photutils.segmentation.detect]
+14:20:17  [Stage 3c] P08: FPR <= 0.01 from 1.50 sigma; FPR at the detection threshold (2.0 sigma) = 0.000; no negative detection above 1.5 sigma (FPR resolution there: 1/2787)
+WARNING: NoDetectionsWarning: No sources were found. Try lowering the threshold or n_pixels parameters. [photutils.segmentation.detect]
+14:20:26  [Stage 3c] P09: FPR <= 0.01 from 1.50 sigma; FPR at the detection threshold (2.0 sigma) = 0.000; no negative detection above 1.5 sigma (FPR resolution there: 1/4144)
+WARNING: NoDetectionsWarning: No sources were found. Try lowering the threshold or n_pixels parameters. [photutils.segmentation.detect]
+14:20:51  [Stage 3c] P10: FPR <= 0.01 from 2499.45 sigma; FPR at the detection threshold (2.0 sigma) = 0.054; no negative detection above 1714.4 sigma (FPR resolution there: 1/12)
+WARNING: NoDetectionsWarning: No sources were found. Try lowering the threshold or n_pixels parameters. [photutils.segmentation.detect]
+14:21:00  [Stage 3c] P11: FPR <= 0.01 from 1.50 sigma; FPR at the detection threshold (2.0 sigma) = 0.000; no negative detection above 1.5 sigma (FPR resolution there: 1/3098)
+WARNING: NoDetectionsWarning: No sources were found. Try lowering the threshold or n_pixels parameters. [photutils.segmentation.detect]
+14:21:09  [Stage 3c] P12: FPR <= 0.01 from 1.50 sigma; FPR at the detection threshold (2.0 sigma) = 0.000; no negative detection above 1.5 sigma (FPR resolution there: 1/4343)
+WARNING: NoDetectionsWarning: No sources were found. Try lowering the threshold or n_pixels parameters. [photutils.segmentation.detect]
+14:21:18  [Stage 3c] P13: FPR <= 0.01 from 1.50 sigma; FPR at the detection threshold (2.0 sigma) = 0.000; no negative detection above 1.5 sigma (FPR resolution there: 1/3756)
+WARNING: NoDetectionsWarning: No sources were found. Try lowering the threshold or n_pixels parameters. [photutils.segmentation.detect]
+14:21:27  [Stage 3c] P14: FPR <= 0.01 from 1.50 sigma; FPR at the detection threshold (2.0 sigma) = 0.000; no negative detection above 1.8 sigma (FPR resolution there: 1/2426)
+14:21:28  [Stage 3c] mean noise_score by track (validation): {'Galaxy': 0.073, 'Noise': 0.634, 'Star': 0.174} | median SNR by track {'Galaxy': 18.6, 'Noise': 29.9, 'Star': 312.8} (cosmic rays are high-S/N: the p_cosmic_ray term, not the FPR, scores them)
+14:21:28  [Stage 3c] ok in 168.6 s
+14:21:28  ==============================================================================
+14:21:28  Stage 5a - Empirical PSF construction
+14:21:28  ==============================================================================
+/Users/sangeet516a/Documents/pixels2provenance/src/p2p/stages/stage5a_empirical_psf.py:58: DtypeWarning: Columns (33: cr_candidate) have mixed types. Specify dtype option on import or set low_memory=False.
+  src = pd.read_csv(ctx.require("1c", "sources.csv"))[["object_id", "cutout_index", "pointing"]]
+14:21:28  [Stage 5a] P01: photutils.EPSFBuilder from 9 stars (own stars); FWHM 2.886 px
+14:21:28  [Stage 5a] P02: photutils.EPSFBuilder from 8 stars (own stars); FWHM 2.704 px
+14:21:28  [Stage 5a] P03: photutils.EPSFBuilder from 7 stars (own stars); FWHM 2.632 px
+14:21:29  [Stage 5a] P04: photutils.EPSFBuilder from 9 stars (own stars); FWHM 2.639 px
+14:21:29  [Stage 5a] P05: photutils.EPSFBuilder from 20 stars (own stars); FWHM 2.785 px
+14:21:29  [Stage 5a] P06: photutils.EPSFBuilder from 6 stars (own stars); FWHM 3.008 px
+14:21:29  [Stage 5a] P07: photutils.EPSFBuilder from 6 stars (own stars); FWHM 3.556 px
+14:21:29  [Stage 5a] P08: photutils.EPSFBuilder from 8 stars (own stars); FWHM 2.678 px
+14:21:30  [Stage 5a] P09: photutils.EPSFBuilder from 7 stars (own stars); FWHM 2.853 px
+14:21:30  [Stage 5a] P10: photutils.EPSFBuilder from 16 stars (own stars); FWHM 2.413 px
+14:21:30  [Stage 5a] P11: photutils.EPSFBuilder from 7 stars (own stars); FWHM 2.868 px
+14:21:31  [Stage 5a] P12: photutils.EPSFBuilder from 8 stars (own stars); FWHM 2.574 px
+14:21:31  [Stage 5a] P13: photutils.EPSFBuilder from 7 stars (own stars); FWHM 2.892 px
+14:21:31  [Stage 5a] P14: photutils.EPSFBuilder from 9 stars (own stars); FWHM 2.845 px
+14:21:31  [Stage 5a] ok in 3.5 s
+14:21:31  ==============================================================================
+14:21:31  Stage 5b - Pass-2 morphology refinement
+14:21:31  ==============================================================================
+/Users/sangeet516a/Documents/pixels2provenance/src/p2p/context.py:179: DtypeWarning: Columns (33: cr_candidate) have mixed types. Specify dtype option on import or set low_memory=False.
+  t = pd.read_csv(ctx.require(key, name))
+14:21:31  [Stage 5b] Pass-2 (psf_fit) on 12552 galaxies with 8 worker(s) ...
+[Parallel(n_jobs=8)]: Using backend LokyBackend with 8 concurrent workers.
+[Parallel(n_jobs=8)]: Done  2 out of 32 | elapsed:  2.3min
+[Parallel(n_jobs=8)]: Done 24 out of 32 | elapsed:  8.5min remaining:  2.8min
+[Parallel(n_jobs=8)]: Done 32 out of 32 | elapsed: 11.0min finished
+14:32:30  [Stage 5b] median Pass-2 minus Pass-1:
+gini_delta             0.0000
+m20_delta              0.0000
+concentration_delta    0.0000
+asymmetry_delta        0.0000
+sersic_n_delta        -0.0301
+sersic_rhalf_delta    -0.3683
+r_half_delta           0.0000
+14:32:30  [Stage 5b] ok in 658.9 s
+14:32:30  ==============================================================================
+14:32:30  Stage 4a - CNN features (ResNet-18 + EfficientNet-B0)
+14:32:30  ==============================================================================
+/Users/sangeet516a/Documents/pixels2provenance/src/p2p/context.py:179: DtypeWarning: Columns (33: cr_candidate) have mixed types. Specify dtype option on import or set low_memory=False.
+  t = pd.read_csv(ctx.require(key, name))
+14:32:30  [Stage 4a] 12,556 galaxies -> ImageNet input 224 x 224 -> frozen ResNet-18 + EfficientNet-B0 (ImageNet weights) on mps
+14:32:31  [Stage 4a] model summaries:
+======================================================================
+Model: "Stage 4a - resnet18 (ImageNet, frozen)"
+======================================================================
+Layer (type)                         Output shape            Param #
+----------------------------------------------------------------------
+conv1 (Conv2d)                       [1, 64, 112, 112]         9,408
+bn1 (BatchNorm2d)                    [1, 64, 112, 112]           128
+relu (ReLU)                          [1, 64, 112, 112]             0
+maxpool (MaxPool2d)                  [1, 64, 56, 56]               0
+layer1.0.conv1 (Conv2d)              [1, 64, 56, 56]          36,864
+layer1.0.bn1 (BatchNorm2d)           [1, 64, 56, 56]             128
+layer1.0.relu (ReLU)                 [1, 64, 56, 56]               0
+layer1.0.conv2 (Conv2d)              [1, 64, 56, 56]          36,864
+layer1.0.bn2 (BatchNorm2d)           [1, 64, 56, 56]             128
+layer1.0.relu (ReLU)                 [1, 64, 56, 56]               0
+layer1.1.conv1 (Conv2d)              [1, 64, 56, 56]          36,864
+layer1.1.bn1 (BatchNorm2d)           [1, 64, 56, 56]             128
+layer1.1.relu (ReLU)                 [1, 64, 56, 56]               0
+layer1.1.conv2 (Conv2d)              [1, 64, 56, 56]          36,864
+layer1.1.bn2 (BatchNorm2d)           [1, 64, 56, 56]             128
+layer1.1.relu (ReLU)                 [1, 64, 56, 56]               0
+layer2.0.conv1 (Conv2d)              [1, 128, 28, 28]         73,728
+layer2.0.bn1 (BatchNorm2d)           [1, 128, 28, 28]            256
+layer2.0.relu (ReLU)                 [1, 128, 28, 28]              0
+layer2.0.conv2 (Conv2d)              [1, 128, 28, 28]        147,456
+layer2.0.bn2 (BatchNorm2d)           [1, 128, 28, 28]            256
+layer2.0.downsample.0 (Conv2d)       [1, 128, 28, 28]          8,192
+layer2.0.downsample.1 (BatchNorm2d)  [1, 128, 28, 28]            256
+layer2.0.relu (ReLU)                 [1, 128, 28, 28]              0
+layer2.1.conv1 (Conv2d)              [1, 128, 28, 28]        147,456
+layer2.1.bn1 (BatchNorm2d)           [1, 128, 28, 28]            256
+layer2.1.relu (ReLU)                 [1, 128, 28, 28]              0
+layer2.1.conv2 (Conv2d)              [1, 128, 28, 28]        147,456
+layer2.1.bn2 (BatchNorm2d)           [1, 128, 28, 28]            256
+layer2.1.relu (ReLU)                 [1, 128, 28, 28]              0
+layer3.0.conv1 (Conv2d)              [1, 256, 14, 14]        294,912
+layer3.0.bn1 (BatchNorm2d)           [1, 256, 14, 14]            512
+layer3.0.relu (ReLU)                 [1, 256, 14, 14]              0
+layer3.0.conv2 (Conv2d)              [1, 256, 14, 14]        589,824
+layer3.0.bn2 (BatchNorm2d)           [1, 256, 14, 14]            512
+layer3.0.downsample.0 (Conv2d)       [1, 256, 14, 14]         32,768
+layer3.0.downsample.1 (BatchNorm2d)  [1, 256, 14, 14]            512
+layer3.0.relu (ReLU)                 [1, 256, 14, 14]              0
+layer3.1.conv1 (Conv2d)              [1, 256, 14, 14]        589,824
+layer3.1.bn1 (BatchNorm2d)           [1, 256, 14, 14]            512
+layer3.1.relu (ReLU)                 [1, 256, 14, 14]              0
+layer3.1.conv2 (Conv2d)              [1, 256, 14, 14]        589,824
+layer3.1.bn2 (BatchNorm2d)           [1, 256, 14, 14]            512
+layer3.1.relu (ReLU)                 [1, 256, 14, 14]              0
+layer4.0.conv1 (Conv2d)              [1, 512, 7, 7]        1,179,648
+layer4.0.bn1 (BatchNorm2d)           [1, 512, 7, 7]            1,024
+layer4.0.relu (ReLU)                 [1, 512, 7, 7]                0
+layer4.0.conv2 (Conv2d)              [1, 512, 7, 7]        2,359,296
+layer4.0.bn2 (BatchNorm2d)           [1, 512, 7, 7]            1,024
+layer4.0.downsample.0 (Conv2d)       [1, 512, 7, 7]          131,072
+layer4.0.downsample.1 (BatchNorm2d)  [1, 512, 7, 7]            1,024
+layer4.0.relu (ReLU)                 [1, 512, 7, 7]                0
+layer4.1.conv1 (Conv2d)              [1, 512, 7, 7]        2,359,296
+layer4.1.bn1 (BatchNorm2d)           [1, 512, 7, 7]            1,024
+layer4.1.relu (ReLU)                 [1, 512, 7, 7]                0
+layer4.1.conv2 (Conv2d)              [1, 512, 7, 7]        2,359,296
+layer4.1.bn2 (BatchNorm2d)           [1, 512, 7, 7]            1,024
+layer4.1.relu (ReLU)                 [1, 512, 7, 7]                0
+avgpool (AdaptiveAvgPool2d)          [1, 512, 1, 1]                0
+flatten (Flatten)                    [1, 512]                      0
+======================================================================
+Input : [1, 3, 224, 224]
+Output: [1, 512]
+Total params: 11,176,512 (42.64 MB float32)
+Trainable params: 0
+Non-trainable params: 11,176,512
+======================================================================
+
+===================================================================================
+Model: "Stage 4a - efficientnet_b0 (ImageNet, frozen)"
+===================================================================================
+Layer (type)                                      Output shape            Param #
+-----------------------------------------------------------------------------------
+features.0.0 (Conv2d)                             [1, 32, 112, 112]           864
+features.0.1 (BatchNorm2d)                        [1, 32, 112, 112]            64
+features.0.2 (SiLU)                               [1, 32, 112, 112]             0
+features.1.0.block.0.0 (Conv2d)                   [1, 32, 112, 112]           288
+features.1.0.block.0.1 (BatchNorm2d)              [1, 32, 112, 112]            64
+features.1.0.block.0.2 (SiLU)                     [1, 32, 112, 112]             0
+features.1.0.block.1.avgpool (AdaptiveAvgPool2d)  [1, 32, 1, 1]                 0
+features.1.0.block.1.fc1 (Conv2d)                 [1, 8, 1, 1]                264
+features.1.0.block.1.activation (SiLU)            [1, 8, 1, 1]                  0
+features.1.0.block.1.fc2 (Conv2d)                 [1, 32, 1, 1]               288
+features.1.0.block.1.scale_activation (Sigmoid)   [1, 32, 1, 1]                 0
+features.1.0.block.2.0 (Conv2d)                   [1, 16, 112, 112]           512
+features.1.0.block.2.1 (BatchNorm2d)              [1, 16, 112, 112]            32
+features.2.0.block.0.0 (Conv2d)                   [1, 96, 112, 112]         1,536
+features.2.0.block.0.1 (BatchNorm2d)              [1, 96, 112, 112]           192
+features.2.0.block.0.2 (SiLU)                     [1, 96, 112, 112]             0
+features.2.0.block.1.0 (Conv2d)                   [1, 96, 56, 56]             864
+features.2.0.block.1.1 (BatchNorm2d)              [1, 96, 56, 56]             192
+features.2.0.block.1.2 (SiLU)                     [1, 96, 56, 56]               0
+features.2.0.block.2.avgpool (AdaptiveAvgPool2d)  [1, 96, 1, 1]                 0
+features.2.0.block.2.fc1 (Conv2d)                 [1, 4, 1, 1]                388
+features.2.0.block.2.activation (SiLU)            [1, 4, 1, 1]                  0
+features.2.0.block.2.fc2 (Conv2d)                 [1, 96, 1, 1]               480
+features.2.0.block.2.scale_activation (Sigmoid)   [1, 96, 1, 1]                 0
+features.2.0.block.3.0 (Conv2d)                   [1, 24, 56, 56]           2,304
+features.2.0.block.3.1 (BatchNorm2d)              [1, 24, 56, 56]              48
+features.2.1.block.0.0 (Conv2d)                   [1, 144, 56, 56]          3,456
+features.2.1.block.0.1 (BatchNorm2d)              [1, 144, 56, 56]            288
+features.2.1.block.0.2 (SiLU)                     [1, 144, 56, 56]              0
+features.2.1.block.1.0 (Conv2d)                   [1, 144, 56, 56]          1,296
+features.2.1.block.1.1 (BatchNorm2d)              [1, 144, 56, 56]            288
+features.2.1.block.1.2 (SiLU)                     [1, 144, 56, 56]              0
+features.2.1.block.2.avgpool (AdaptiveAvgPool2d)  [1, 144, 1, 1]                0
+features.2.1.block.2.fc1 (Conv2d)                 [1, 6, 1, 1]                870
+features.2.1.block.2.activation (SiLU)            [1, 6, 1, 1]                  0
+features.2.1.block.2.fc2 (Conv2d)                 [1, 144, 1, 1]            1,008
+features.2.1.block.2.scale_activation (Sigmoid)   [1, 144, 1, 1]                0
+features.2.1.block.3.0 (Conv2d)                   [1, 24, 56, 56]           3,456
+features.2.1.block.3.1 (BatchNorm2d)              [1, 24, 56, 56]              48
+features.2.1.stochastic_depth (StochasticDepth)   [1, 24, 56, 56]               0
+features.3.0.block.0.0 (Conv2d)                   [1, 144, 56, 56]          3,456
+features.3.0.block.0.1 (BatchNorm2d)              [1, 144, 56, 56]            288
+features.3.0.block.0.2 (SiLU)                     [1, 144, 56, 56]              0
+features.3.0.block.1.0 (Conv2d)                   [1, 144, 28, 28]          3,600
+features.3.0.block.1.1 (BatchNorm2d)              [1, 144, 28, 28]            288
+features.3.0.block.1.2 (SiLU)                     [1, 144, 28, 28]              0
+features.3.0.block.2.avgpool (AdaptiveAvgPool2d)  [1, 144, 1, 1]                0
+features.3.0.block.2.fc1 (Conv2d)                 [1, 6, 1, 1]                870
+features.3.0.block.2.activation (SiLU)            [1, 6, 1, 1]                  0
+features.3.0.block.2.fc2 (Conv2d)                 [1, 144, 1, 1]            1,008
+features.3.0.block.2.scale_activation (Sigmoid)   [1, 144, 1, 1]                0
+features.3.0.block.3.0 (Conv2d)                   [1, 40, 28, 28]           5,760
+features.3.0.block.3.1 (BatchNorm2d)              [1, 40, 28, 28]              80
+features.3.1.block.0.0 (Conv2d)                   [1, 240, 28, 28]          9,600
+features.3.1.block.0.1 (BatchNorm2d)              [1, 240, 28, 28]            480
+features.3.1.block.0.2 (SiLU)                     [1, 240, 28, 28]              0
+features.3.1.block.1.0 (Conv2d)                   [1, 240, 28, 28]          6,000
+features.3.1.block.1.1 (BatchNorm2d)              [1, 240, 28, 28]            480
+features.3.1.block.1.2 (SiLU)                     [1, 240, 28, 28]              0
+features.3.1.block.2.avgpool (AdaptiveAvgPool2d)  [1, 240, 1, 1]                0
+features.3.1.block.2.fc1 (Conv2d)                 [1, 10, 1, 1]             2,410
+features.3.1.block.2.activation (SiLU)            [1, 10, 1, 1]                 0
+features.3.1.block.2.fc2 (Conv2d)                 [1, 240, 1, 1]            2,640
+features.3.1.block.2.scale_activation (Sigmoid)   [1, 240, 1, 1]                0
+features.3.1.block.3.0 (Conv2d)                   [1, 40, 28, 28]           9,600
+features.3.1.block.3.1 (BatchNorm2d)              [1, 40, 28, 28]              80
+features.3.1.stochastic_depth (StochasticDepth)   [1, 40, 28, 28]               0
+features.4.0.block.0.0 (Conv2d)                   [1, 240, 28, 28]          9,600
+features.4.0.block.0.1 (BatchNorm2d)              [1, 240, 28, 28]            480
+features.4.0.block.0.2 (SiLU)                     [1, 240, 28, 28]              0
+features.4.0.block.1.0 (Conv2d)                   [1, 240, 14, 14]          2,160
+features.4.0.block.1.1 (BatchNorm2d)              [1, 240, 14, 14]            480
+features.4.0.block.1.2 (SiLU)                     [1, 240, 14, 14]              0
+features.4.0.block.2.avgpool (AdaptiveAvgPool2d)  [1, 240, 1, 1]                0
+features.4.0.block.2.fc1 (Conv2d)                 [1, 10, 1, 1]             2,410
+features.4.0.block.2.activation (SiLU)            [1, 10, 1, 1]                 0
+features.4.0.block.2.fc2 (Conv2d)                 [1, 240, 1, 1]            2,640
+features.4.0.block.2.scale_activation (Sigmoid)   [1, 240, 1, 1]                0
+features.4.0.block.3.0 (Conv2d)                   [1, 80, 14, 14]          19,200
+features.4.0.block.3.1 (BatchNorm2d)              [1, 80, 14, 14]             160
+features.4.1.block.0.0 (Conv2d)                   [1, 480, 14, 14]         38,400
+features.4.1.block.0.1 (BatchNorm2d)              [1, 480, 14, 14]            960
+features.4.1.block.0.2 (SiLU)                     [1, 480, 14, 14]              0
+features.4.1.block.1.0 (Conv2d)                   [1, 480, 14, 14]          4,320
+features.4.1.block.1.1 (BatchNorm2d)              [1, 480, 14, 14]            960
+features.4.1.block.1.2 (SiLU)                     [1, 480, 14, 14]              0
+features.4.1.block.2.avgpool (AdaptiveAvgPool2d)  [1, 480, 1, 1]                0
+features.4.1.block.2.fc1 (Conv2d)                 [1, 20, 1, 1]             9,620
+features.4.1.block.2.activation (SiLU)            [1, 20, 1, 1]                 0
+features.4.1.block.2.fc2 (Conv2d)                 [1, 480, 1, 1]           10,080
+features.4.1.block.2.scale_activation (Sigmoid)   [1, 480, 1, 1]                0
+features.4.1.block.3.0 (Conv2d)                   [1, 80, 14, 14]          38,400
+features.4.1.block.3.1 (BatchNorm2d)              [1, 80, 14, 14]             160
+features.4.1.stochastic_depth (StochasticDepth)   [1, 80, 14, 14]               0
+features.4.2.block.0.0 (Conv2d)                   [1, 480, 14, 14]         38,400
+features.4.2.block.0.1 (BatchNorm2d)              [1, 480, 14, 14]            960
+features.4.2.block.0.2 (SiLU)                     [1, 480, 14, 14]              0
+features.4.2.block.1.0 (Conv2d)                   [1, 480, 14, 14]          4,320
+features.4.2.block.1.1 (BatchNorm2d)              [1, 480, 14, 14]            960
+features.4.2.block.1.2 (SiLU)                     [1, 480, 14, 14]              0
+features.4.2.block.2.avgpool (AdaptiveAvgPool2d)  [1, 480, 1, 1]                0
+features.4.2.block.2.fc1 (Conv2d)                 [1, 20, 1, 1]             9,620
+features.4.2.block.2.activation (SiLU)            [1, 20, 1, 1]                 0
+features.4.2.block.2.fc2 (Conv2d)                 [1, 480, 1, 1]           10,080
+features.4.2.block.2.scale_activation (Sigmoid)   [1, 480, 1, 1]                0
+features.4.2.block.3.0 (Conv2d)                   [1, 80, 14, 14]          38,400
+features.4.2.block.3.1 (BatchNorm2d)              [1, 80, 14, 14]             160
+features.4.2.stochastic_depth (StochasticDepth)   [1, 80, 14, 14]               0
+features.5.0.block.0.0 (Conv2d)                   [1, 480, 14, 14]         38,400
+features.5.0.block.0.1 (BatchNorm2d)              [1, 480, 14, 14]            960
+features.5.0.block.0.2 (SiLU)                     [1, 480, 14, 14]              0
+features.5.0.block.1.0 (Conv2d)                   [1, 480, 14, 14]         12,000
+features.5.0.block.1.1 (BatchNorm2d)              [1, 480, 14, 14]            960
+features.5.0.block.1.2 (SiLU)                     [1, 480, 14, 14]              0
+features.5.0.block.2.avgpool (AdaptiveAvgPool2d)  [1, 480, 1, 1]                0
+features.5.0.block.2.fc1 (Conv2d)                 [1, 20, 1, 1]             9,620
+features.5.0.block.2.activation (SiLU)            [1, 20, 1, 1]                 0
+features.5.0.block.2.fc2 (Conv2d)                 [1, 480, 1, 1]           10,080
+features.5.0.block.2.scale_activation (Sigmoid)   [1, 480, 1, 1]                0
+features.5.0.block.3.0 (Conv2d)                   [1, 112, 14, 14]         53,760
+features.5.0.block.3.1 (BatchNorm2d)              [1, 112, 14, 14]            224
+features.5.1.block.0.0 (Conv2d)                   [1, 672, 14, 14]         75,264
+features.5.1.block.0.1 (BatchNorm2d)              [1, 672, 14, 14]          1,344
+features.5.1.block.0.2 (SiLU)                     [1, 672, 14, 14]              0
+features.5.1.block.1.0 (Conv2d)                   [1, 672, 14, 14]         16,800
+features.5.1.block.1.1 (BatchNorm2d)              [1, 672, 14, 14]          1,344
+features.5.1.block.1.2 (SiLU)                     [1, 672, 14, 14]              0
+features.5.1.block.2.avgpool (AdaptiveAvgPool2d)  [1, 672, 1, 1]                0
+features.5.1.block.2.fc1 (Conv2d)                 [1, 28, 1, 1]            18,844
+features.5.1.block.2.activation (SiLU)            [1, 28, 1, 1]                 0
+features.5.1.block.2.fc2 (Conv2d)                 [1, 672, 1, 1]           19,488
+features.5.1.block.2.scale_activation (Sigmoid)   [1, 672, 1, 1]                0
+features.5.1.block.3.0 (Conv2d)                   [1, 112, 14, 14]         75,264
+features.5.1.block.3.1 (BatchNorm2d)              [1, 112, 14, 14]            224
+features.5.1.stochastic_depth (StochasticDepth)   [1, 112, 14, 14]              0
+features.5.2.block.0.0 (Conv2d)                   [1, 672, 14, 14]         75,264
+features.5.2.block.0.1 (BatchNorm2d)              [1, 672, 14, 14]          1,344
+features.5.2.block.0.2 (SiLU)                     [1, 672, 14, 14]              0
+features.5.2.block.1.0 (Conv2d)                   [1, 672, 14, 14]         16,800
+features.5.2.block.1.1 (BatchNorm2d)              [1, 672, 14, 14]          1,344
+features.5.2.block.1.2 (SiLU)                     [1, 672, 14, 14]              0
+features.5.2.block.2.avgpool (AdaptiveAvgPool2d)  [1, 672, 1, 1]                0
+features.5.2.block.2.fc1 (Conv2d)                 [1, 28, 1, 1]            18,844
+features.5.2.block.2.activation (SiLU)            [1, 28, 1, 1]                 0
+features.5.2.block.2.fc2 (Conv2d)                 [1, 672, 1, 1]           19,488
+features.5.2.block.2.scale_activation (Sigmoid)   [1, 672, 1, 1]                0
+features.5.2.block.3.0 (Conv2d)                   [1, 112, 14, 14]         75,264
+features.5.2.block.3.1 (BatchNorm2d)              [1, 112, 14, 14]            224
+features.5.2.stochastic_depth (StochasticDepth)   [1, 112, 14, 14]              0
+features.6.0.block.0.0 (Conv2d)                   [1, 672, 14, 14]         75,264
+features.6.0.block.0.1 (BatchNorm2d)              [1, 672, 14, 14]          1,344
+features.6.0.block.0.2 (SiLU)                     [1, 672, 14, 14]              0
+features.6.0.block.1.0 (Conv2d)                   [1, 672, 7, 7]           16,800
+features.6.0.block.1.1 (BatchNorm2d)              [1, 672, 7, 7]            1,344
+features.6.0.block.1.2 (SiLU)                     [1, 672, 7, 7]                0
+features.6.0.block.2.avgpool (AdaptiveAvgPool2d)  [1, 672, 1, 1]                0
+features.6.0.block.2.fc1 (Conv2d)                 [1, 28, 1, 1]            18,844
+features.6.0.block.2.activation (SiLU)            [1, 28, 1, 1]                 0
+features.6.0.block.2.fc2 (Conv2d)                 [1, 672, 1, 1]           19,488
+features.6.0.block.2.scale_activation (Sigmoid)   [1, 672, 1, 1]                0
+features.6.0.block.3.0 (Conv2d)                   [1, 192, 7, 7]          129,024
+features.6.0.block.3.1 (BatchNorm2d)              [1, 192, 7, 7]              384
+features.6.1.block.0.0 (Conv2d)                   [1, 1152, 7, 7]         221,184
+features.6.1.block.0.1 (BatchNorm2d)              [1, 1152, 7, 7]           2,304
+features.6.1.block.0.2 (SiLU)                     [1, 1152, 7, 7]               0
+features.6.1.block.1.0 (Conv2d)                   [1, 1152, 7, 7]          28,800
+features.6.1.block.1.1 (BatchNorm2d)              [1, 1152, 7, 7]           2,304
+features.6.1.block.1.2 (SiLU)                     [1, 1152, 7, 7]               0
+features.6.1.block.2.avgpool (AdaptiveAvgPool2d)  [1, 1152, 1, 1]               0
+features.6.1.block.2.fc1 (Conv2d)                 [1, 48, 1, 1]            55,344
+features.6.1.block.2.activation (SiLU)            [1, 48, 1, 1]                 0
+features.6.1.block.2.fc2 (Conv2d)                 [1, 1152, 1, 1]          56,448
+features.6.1.block.2.scale_activation (Sigmoid)   [1, 1152, 1, 1]               0
+features.6.1.block.3.0 (Conv2d)                   [1, 192, 7, 7]          221,184
+features.6.1.block.3.1 (BatchNorm2d)              [1, 192, 7, 7]              384
+features.6.1.stochastic_depth (StochasticDepth)   [1, 192, 7, 7]                0
+features.6.2.block.0.0 (Conv2d)                   [1, 1152, 7, 7]         221,184
+features.6.2.block.0.1 (BatchNorm2d)              [1, 1152, 7, 7]           2,304
+features.6.2.block.0.2 (SiLU)                     [1, 1152, 7, 7]               0
+features.6.2.block.1.0 (Conv2d)                   [1, 1152, 7, 7]          28,800
+features.6.2.block.1.1 (BatchNorm2d)              [1, 1152, 7, 7]           2,304
+features.6.2.block.1.2 (SiLU)                     [1, 1152, 7, 7]               0
+features.6.2.block.2.avgpool (AdaptiveAvgPool2d)  [1, 1152, 1, 1]               0
+features.6.2.block.2.fc1 (Conv2d)                 [1, 48, 1, 1]            55,344
+features.6.2.block.2.activation (SiLU)            [1, 48, 1, 1]                 0
+features.6.2.block.2.fc2 (Conv2d)                 [1, 1152, 1, 1]          56,448
+features.6.2.block.2.scale_activation (Sigmoid)   [1, 1152, 1, 1]               0
+features.6.2.block.3.0 (Conv2d)                   [1, 192, 7, 7]          221,184
+features.6.2.block.3.1 (BatchNorm2d)              [1, 192, 7, 7]              384
+features.6.2.stochastic_depth (StochasticDepth)   [1, 192, 7, 7]                0
+features.6.3.block.0.0 (Conv2d)                   [1, 1152, 7, 7]         221,184
+features.6.3.block.0.1 (BatchNorm2d)              [1, 1152, 7, 7]           2,304
+features.6.3.block.0.2 (SiLU)                     [1, 1152, 7, 7]               0
+features.6.3.block.1.0 (Conv2d)                   [1, 1152, 7, 7]          28,800
+features.6.3.block.1.1 (BatchNorm2d)              [1, 1152, 7, 7]           2,304
+features.6.3.block.1.2 (SiLU)                     [1, 1152, 7, 7]               0
+features.6.3.block.2.avgpool (AdaptiveAvgPool2d)  [1, 1152, 1, 1]               0
+features.6.3.block.2.fc1 (Conv2d)                 [1, 48, 1, 1]            55,344
+features.6.3.block.2.activation (SiLU)            [1, 48, 1, 1]                 0
+features.6.3.block.2.fc2 (Conv2d)                 [1, 1152, 1, 1]          56,448
+features.6.3.block.2.scale_activation (Sigmoid)   [1, 1152, 1, 1]               0
+features.6.3.block.3.0 (Conv2d)                   [1, 192, 7, 7]          221,184
+features.6.3.block.3.1 (BatchNorm2d)              [1, 192, 7, 7]              384
+features.6.3.stochastic_depth (StochasticDepth)   [1, 192, 7, 7]                0
+features.7.0.block.0.0 (Conv2d)                   [1, 1152, 7, 7]         221,184
+features.7.0.block.0.1 (BatchNorm2d)              [1, 1152, 7, 7]           2,304
+features.7.0.block.0.2 (SiLU)                     [1, 1152, 7, 7]               0
+features.7.0.block.1.0 (Conv2d)                   [1, 1152, 7, 7]          10,368
+features.7.0.block.1.1 (BatchNorm2d)              [1, 1152, 7, 7]           2,304
+features.7.0.block.1.2 (SiLU)                     [1, 1152, 7, 7]               0
+features.7.0.block.2.avgpool (AdaptiveAvgPool2d)  [1, 1152, 1, 1]               0
+features.7.0.block.2.fc1 (Conv2d)                 [1, 48, 1, 1]            55,344
+features.7.0.block.2.activation (SiLU)            [1, 48, 1, 1]                 0
+features.7.0.block.2.fc2 (Conv2d)                 [1, 1152, 1, 1]          56,448
+features.7.0.block.2.scale_activation (Sigmoid)   [1, 1152, 1, 1]               0
+features.7.0.block.3.0 (Conv2d)                   [1, 320, 7, 7]          368,640
+features.7.0.block.3.1 (BatchNorm2d)              [1, 320, 7, 7]              640
+features.8.0 (Conv2d)                             [1, 1280, 7, 7]         409,600
+features.8.1 (BatchNorm2d)                        [1, 1280, 7, 7]           2,560
+features.8.2 (SiLU)                               [1, 1280, 7, 7]               0
+avgpool (AdaptiveAvgPool2d)                       [1, 1280, 1, 1]               0
+flatten (Flatten)                                 [1, 1280]                     0
+===================================================================================
+Input : [1, 3, 224, 224]
+Output: [1, 1280]
+Total params: 4,007,548 (15.29 MB float32)
+Trainable params: 0
+Non-trainable params: 4,007,548
+===================================================================================
+14:32:31  [Stage 4a] CNN input: crop True (4.0 x r_petro, >= 32 px), neighbour mask True, cosmic-ray cleaning True, 4 rotations
+14:32:58    [features] 64 / 12,556 galaxies (12 s)
+14:34:49    [features] 1,664 / 12,556 galaxies (123 s)
+14:36:19    [features] 3,264 / 12,556 galaxies (213 s)
+14:37:49    [features] 4,864 / 12,556 galaxies (304 s)
+14:39:30    [features] 6,464 / 12,556 galaxies (404 s)
+14:40:58    [features] 8,064 / 12,556 galaxies (492 s)
+14:42:33    [features] 9,664 / 12,556 galaxies (588 s)
+14:43:55    [features] 11,264 / 12,556 galaxies (669 s)
+14:45:01  [Stage 4a] features (12556, 1792) (749.9 s): ResNet-18 columns 0-511, EfficientNet-B0 columns 512-1791 -> outputs/stage4a_cnn_features/cnn_features.npy
+14:45:01  [Stage 4a] ok in 751.0 s
+14:45:01  ==============================================================================
+14:45:01  Stage 4b - Ensemble (feature fusion) + XGBoost
+14:45:01  ==============================================================================
+/Users/sangeet516a/Documents/pixels2provenance/src/p2p/context.py:179: DtypeWarning: Columns (33: cr_candidate) have mixed types. Specify dtype option on import or set low_memory=False.
+  t = pd.read_csv(ctx.require(key, name))
+14:45:02  [Stage 4b] ENSEMBLE input: 3185 galaxies x 1810 features (ResNet-18 512 + EfficientNet-B0 1,280 + physical 18)
+gz_label    Ambiguous  EdgeOn  FaceOnSpiral  Irregular  Smooth
+orig_split                                                    
+dev                39      72            77         67      40
+train             406     695           639        810     340
+[Stage 4b] CNN blocks -> 32 principal components each (fitted inside every CV fold) | sample weights: balanced classes x GZH label confidence
+[Stage 4b] compile: XGBClassifier(objective multi:softprob, {'max_depth': 4, 'min_child_weight': 2, 'learning_rate': 0.05, 'subsample': 0.8, 'colsample_bytree': 0.3, 'reg_lambda': 1.0, 'reg_alpha': 0.0, 'tree_method': 'hist', 'n_jobs': 4}, n_estimators <= 400) | grid {'max_depth': [3, 4, 6], 'colsample_bytree': [0.3, 0.6]} | metrics: log-loss, accuracy, Macro-F1 | 5-fold CV (folds of [636, 638, 635, 640, 636], grouped by 30" sky cells)
+14:45:19    [ensemble] w = [0.333, 0.333, 0.334], max_depth 3, colsample_bytree 0.3: best 325 trees, OOF log-loss 1.1788, Macro-F1 0.5212, accuracy 0.5246
+14:45:36    [ensemble] w = [0.333, 0.333, 0.334], max_depth 3, colsample_bytree 0.6: best 275 trees, OOF log-loss 1.1767, Macro-F1 0.5239, accuracy 0.5275
+14:45:54    [ensemble] w = [0.333, 0.333, 0.334], max_depth 4, colsample_bytree 0.3: best 250 trees, OOF log-loss 1.1727, Macro-F1 0.5212, accuracy 0.5250
+14:46:14    [ensemble] w = [0.333, 0.333, 0.334], max_depth 4, colsample_bytree 0.6: best 225 trees, OOF log-loss 1.1698, Macro-F1 0.5203, accuracy 0.5221
+14:46:38    [ensemble] w = [0.333, 0.333, 0.334], max_depth 6, colsample_bytree 0.3: best 175 trees, OOF log-loss 1.1651, Macro-F1 0.5316, accuracy 0.5359
+14:47:07    [ensemble] w = [0.333, 0.333, 0.334], max_depth 6, colsample_bytree 0.6: best 150 trees, OOF log-loss 1.1655, Macro-F1 0.5332, accuracy 0.5350
+14:47:22    [ensemble] w = [0.284, 0.708, 0.008], max_depth 3, colsample_bytree 0.3: best 400 trees, OOF log-loss 1.2879, Macro-F1 0.4627, accuracy 0.4728
+14:47:38    [ensemble] w = [0.284, 0.708, 0.008], max_depth 3, colsample_bytree 0.6: best 400 trees, OOF log-loss 1.2463, Macro-F1 0.4871, accuracy 0.4970
+14:47:55    [ensemble] w = [0.284, 0.708, 0.008], max_depth 4, colsample_bytree 0.3: best 300 trees, OOF log-loss 1.2899, Macro-F1 0.4603, accuracy 0.4741
+14:48:15    [ensemble] w = [0.284, 0.708, 0.008], max_depth 4, colsample_bytree 0.6: best 275 trees, OOF log-loss 1.2585, Macro-F1 0.4754, accuracy 0.4889
+14:48:38    [ensemble] w = [0.284, 0.708, 0.008], max_depth 6, colsample_bytree 0.3: best 200 trees, OOF log-loss 1.2944, Macro-F1 0.4504, accuracy 0.4688
+14:49:07    [ensemble] w = [0.284, 0.708, 0.008], max_depth 6, colsample_bytree 0.6: best 150 trees, OOF log-loss 1.2731, Macro-F1 0.4565, accuracy 0.4738
+14:49:22    [ensemble] w = [0.4, 0.4, 0.2], max_depth 3, colsample_bytree 0.3: best 375 trees, OOF log-loss 1.1841, Macro-F1 0.5182, accuracy 0.5237
+14:49:39    [ensemble] w = [0.4, 0.4, 0.2], max_depth 3, colsample_bytree 0.6: best 325 trees, OOF log-loss 1.1797, Macro-F1 0.5230, accuracy 0.5275
+14:49:56    [ensemble] w = [0.4, 0.4, 0.2], max_depth 4, colsample_bytree 0.3: best 250 trees, OOF log-loss 1.1773, Macro-F1 0.5229, accuracy 0.5278
+14:50:16    [ensemble] w = [0.4, 0.4, 0.2], max_depth 4, colsample_bytree 0.6: best 250 trees, OOF log-loss 1.1724, Macro-F1 0.5253, accuracy 0.5300
+14:50:39    [ensemble] w = [0.4, 0.4, 0.2], max_depth 6, colsample_bytree 0.3: best 200 trees, OOF log-loss 1.1784, Macro-F1 0.5199, accuracy 0.5287
+14:51:09    [ensemble] w = [0.4, 0.4, 0.2], max_depth 6, colsample_bytree 0.6: best 150 trees, OOF log-loss 1.1654, Macro-F1 0.5263, accuracy 0.5312
+14:51:24    [ensemble] w = [0.25, 0.25, 0.5], max_depth 3, colsample_bytree 0.3: best 375 trees, OOF log-loss 1.1763, Macro-F1 0.5216, accuracy 0.5243
+14:51:41    [ensemble] w = [0.25, 0.25, 0.5], max_depth 3, colsample_bytree 0.6: best 275 trees, OOF log-loss 1.1772, Macro-F1 0.5223, accuracy 0.5262
+14:51:59    [ensemble] w = [0.25, 0.25, 0.5], max_depth 4, colsample_bytree 0.3: best 250 trees, OOF log-loss 1.1719, Macro-F1 0.5267, accuracy 0.5287
+14:52:20    [ensemble] w = [0.25, 0.25, 0.5], max_depth 4, colsample_bytree 0.6: best 225 trees, OOF log-loss 1.1700, Macro-F1 0.5193, accuracy 0.5231
+14:52:43    [ensemble] w = [0.25, 0.25, 0.5], max_depth 6, colsample_bytree 0.3: best 150 trees, OOF log-loss 1.1679, Macro-F1 0.5290, accuracy 0.5322
+14:53:13    [ensemble] w = [0.25, 0.25, 0.5], max_depth 6, colsample_bytree 0.6: best 150 trees, OOF log-loss 1.1657, Macro-F1 0.5306, accuracy 0.5338
+14:53:28    [ensemble] w = [0.5, 0.25, 0.25], max_depth 3, colsample_bytree 0.3: best 325 trees, OOF log-loss 1.1809, Macro-F1 0.5226, accuracy 0.5256
+14:53:44    [ensemble] w = [0.5, 0.25, 0.25], max_depth 3, colsample_bytree 0.6: best 300 trees, OOF log-loss 1.1788, Macro-F1 0.5227, accuracy 0.5262
+14:54:02    [ensemble] w = [0.5, 0.25, 0.25], max_depth 4, colsample_bytree 0.3: best 275 trees, OOF log-loss 1.1788, Macro-F1 0.5191, accuracy 0.5237
+14:54:22    [ensemble] w = [0.5, 0.25, 0.25], max_depth 4, colsample_bytree 0.6: best 200 trees, OOF log-loss 1.1745, Macro-F1 0.5179, accuracy 0.5206
+14:54:45    [ensemble] w = [0.5, 0.25, 0.25], max_depth 6, colsample_bytree 0.3: best 200 trees, OOF log-loss 1.1762, Macro-F1 0.5256, accuracy 0.5325
+14:55:15    [ensemble] w = [0.5, 0.25, 0.25], max_depth 6, colsample_bytree 0.6: best 150 trees, OOF log-loss 1.1664, Macro-F1 0.5263, accuracy 0.5297
+14:55:30    [ensemble] w = [0.25, 0.5, 0.25], max_depth 3, colsample_bytree 0.3: best 375 trees, OOF log-loss 1.1768, Macro-F1 0.5217, accuracy 0.5262
+14:55:46    [ensemble] w = [0.25, 0.5, 0.25], max_depth 3, colsample_bytree 0.6: best 275 trees, OOF log-loss 1.1779, Macro-F1 0.5183, accuracy 0.5224
+14:56:04    [ensemble] w = [0.25, 0.5, 0.25], max_depth 4, colsample_bytree 0.3: best 250 trees, OOF log-loss 1.1736, Macro-F1 0.5212, accuracy 0.5259
+14:56:24    [ensemble] w = [0.25, 0.5, 0.25], max_depth 4, colsample_bytree 0.6: best 225 trees, OOF log-loss 1.1689, Macro-F1 0.5249, accuracy 0.5272
+14:56:48    [ensemble] w = [0.25, 0.5, 0.25], max_depth 6, colsample_bytree 0.3: best 175 trees, OOF log-loss 1.1718, Macro-F1 0.5247, accuracy 0.5290
+14:57:17    [ensemble] w = [0.25, 0.5, 0.25], max_depth 6, colsample_bytree 0.6: best 150 trees, OOF log-loss 1.1673, Macro-F1 0.5274, accuracy 0.5303
+14:57:18  [Stage 4b] ENSEMBLE weights chosen: w1 (ResNet-18) = 0.333, w2 (EfficientNet-B0) = 0.333, w3 (physical) = 0.334; max_depth 6, colsample_bytree 0.3 -> 175 trees per class
+14:57:18  [Stage 4b] XGBoost history (mean over the CV folds; val = held-out fold):
+  round  10  loss 1.3407  accuracy 0.7684  val_loss 1.4698  val_accuracy 0.5017
+  round  50  loss 0.7900  accuracy 0.8779  val_loss 1.2518  val_accuracy 0.5211
+  round 100  loss 0.4974  accuracy 0.9423  val_loss 1.1830  val_accuracy 0.5268
+  round 175  loss 0.2856  accuracy 0.9887  val_loss 1.1652  val_accuracy 0.5359
+  round 200  loss 0.2408  accuracy 0.9945  val_loss 1.1663  val_accuracy 0.5396
+  round 300  loss 0.1315  accuracy 0.9998  val_loss 1.1842  val_accuracy 0.5324
+  round 400  loss 0.0807  accuracy 1.0000  val_loss 1.2075  val_accuracy 0.5340
+14:57:32  [Stage 4b] physical XGBoost: 200 trees, OOF Macro-F1 0.5158, log-loss 1.2127
+14:57:32  [Stage 4b] fine-tuning ['resnet18', 'efficientnet_b0'] on 3185 galaxies (mps): input 112 px, 12 epochs, AdamW lr 0.0003 (one-cycle), weight decay 0.0001, batch 32, label smoothing 0.1, dropout 0.3, trained stages: last2, 4 rotations at prediction
+/Users/sangeet516a/Documents/pixels2provenance/src/p2p/context.py:179: DtypeWarning: Columns (33: cr_candidate) have mixed types. Specify dtype option on import or set low_memory=False.
+  t = pd.read_csv(ctx.require(key, name))
+14:59:04    [resnet18 fold 1/5] epoch  1/12  loss 1.3556  accuracy 0.4359  val_loss 1.3778  val_accuracy 0.4434  (19 s)
+14:59:13    [resnet18 fold 1/5] epoch  2/12  loss 1.2224  accuracy 0.5057  val_loss 1.3493  val_accuracy 0.4230  (29 s)
+14:59:20    [resnet18 fold 1/5] epoch  3/12  loss 1.1665  accuracy 0.5363  val_loss 1.3115  val_accuracy 0.4686  (36 s)
+14:59:28    [resnet18 fold 1/5] epoch  4/12  loss 1.1408  accuracy 0.5508  val_loss 1.2719  val_accuracy 0.4811  (43 s)
+14:59:35    [resnet18 fold 1/5] epoch  5/12  loss 1.0823  accuracy 0.5916  val_loss 1.2907  val_accuracy 0.4701  (51 s)
+14:59:43    [resnet18 fold 1/5] epoch  6/12  loss 1.0128  accuracy 0.6140  val_loss 1.2690  val_accuracy 0.4670  (58 s)
+14:59:51    [resnet18 fold 1/5] epoch  7/12  loss 0.9626  accuracy 0.6410  val_loss 1.3245  val_accuracy 0.4780  (66 s)
+15:00:01    [resnet18 fold 1/5] epoch  8/12  loss 0.8555  accuracy 0.6964  val_loss 1.2618  val_accuracy 0.4796  (76 s)
+15:00:15    [resnet18 fold 1/5] epoch  9/12  loss 0.7596  accuracy 0.7462  val_loss 1.2343  val_accuracy 0.4937  (91 s)
+15:00:33    [resnet18 fold 1/5] epoch 10/12  loss 0.7209  accuracy 0.7579  val_loss 1.2582  val_accuracy 0.4654  (108 s)
+15:00:48    [resnet18 fold 1/5] epoch 11/12  loss 0.7007  accuracy 0.7725  val_loss 1.2620  val_accuracy 0.5016  (123 s)
+15:01:01    [resnet18 fold 1/5] epoch 12/12  loss 0.6785  accuracy 0.7827  val_loss 1.2436  val_accuracy 0.4906  (136 s)
+15:01:15    [resnet18 fold 2/5] epoch  1/12  loss 1.3826  accuracy 0.4209  val_loss 1.3970  val_accuracy 0.4060  (12 s)
+15:01:29    [resnet18 fold 2/5] epoch  2/12  loss 1.2545  accuracy 0.5010  val_loss 1.3359  val_accuracy 0.4875  (27 s)
+15:01:48    [resnet18 fold 2/5] epoch  3/12  loss 1.3569  accuracy 0.4601  val_loss 1.4816  val_accuracy 0.4060  (46 s)
+15:02:05    [resnet18 fold 2/5] epoch  4/12  loss 1.1373  accuracy 0.5481  val_loss 1.2601  val_accuracy 0.5125  (63 s)
+15:02:17    [resnet18 fold 2/5] epoch  5/12  loss 1.1942  accuracy 0.5135  val_loss 1.3852  val_accuracy 0.4075  (74 s)
+15:02:29    [resnet18 fold 2/5] epoch  6/12  loss 1.1243  accuracy 0.5705  val_loss 1.3641  val_accuracy 0.4530  (87 s)
+15:02:41    [resnet18 fold 2/5] epoch  7/12  loss 0.9782  accuracy 0.6278  val_loss 1.2852  val_accuracy 0.4812  (99 s)
+15:02:54    [resnet18 fold 2/5] epoch  8/12  loss 0.8390  accuracy 0.6957  val_loss 1.2218  val_accuracy 0.4969  (112 s)
+15:03:06    [resnet18 fold 2/5] epoch  9/12  loss 0.7783  accuracy 0.7326  val_loss 1.2152  val_accuracy 0.5125  (124 s)
+15:03:19    [resnet18 fold 2/5] epoch 10/12  loss 0.7019  accuracy 0.7648  val_loss 1.1940  val_accuracy 0.5219  (137 s)
+15:03:31    [resnet18 fold 2/5] epoch 11/12  loss 0.6655  accuracy 0.7774  val_loss 1.1940  val_accuracy 0.5235  (149 s)
+15:03:43    [resnet18 fold 2/5] epoch 12/12  loss 0.6739  accuracy 0.7786  val_loss 1.2026  val_accuracy 0.5172  (161 s)
+15:04:00    [resnet18 fold 3/5] epoch  1/12  loss 1.3918  accuracy 0.4078  val_loss 1.4525  val_accuracy 0.3732  (15 s)
+15:04:12    [resnet18 fold 3/5] epoch  2/12  loss 1.2633  accuracy 0.4851  val_loss 1.3673  val_accuracy 0.4441  (27 s)
+15:04:24    [resnet18 fold 3/5] epoch  3/12  loss 1.1995  accuracy 0.5282  val_loss 1.3353  val_accuracy 0.4598  (39 s)
+15:04:36    [resnet18 fold 3/5] epoch  4/12  loss 1.1457  accuracy 0.5427  val_loss 1.3184  val_accuracy 0.4567  (51 s)
+15:04:47    [resnet18 fold 3/5] epoch  5/12  loss 1.0854  accuracy 0.5600  val_loss 1.3244  val_accuracy 0.4598  (62 s)
+15:05:00    [resnet18 fold 3/5] epoch  6/12  loss 1.0073  accuracy 0.6004  val_loss 1.2664  val_accuracy 0.4772  (75 s)
+15:05:11    [resnet18 fold 3/5] epoch  7/12  loss 0.9637  accuracy 0.6325  val_loss 1.2972  val_accuracy 0.4583  (86 s)
+15:05:22    [resnet18 fold 3/5] epoch  8/12  loss 0.9065  accuracy 0.6620  val_loss 1.2613  val_accuracy 0.4835  (97 s)
+15:05:32    [resnet18 fold 3/5] epoch  9/12  loss 0.7754  accuracy 0.7388  val_loss 1.2509  val_accuracy 0.4866  (107 s)
+15:05:51    [resnet18 fold 3/5] epoch 10/12  loss 0.7131  accuracy 0.7643  val_loss 1.2307  val_accuracy 0.5118  (126 s)
+15:06:14    [resnet18 fold 3/5] epoch 11/12  loss 0.6761  accuracy 0.7812  val_loss 1.2407  val_accuracy 0.4976  (149 s)
+15:06:34    [resnet18 fold 3/5] epoch 12/12  loss 0.6657  accuracy 0.7878  val_loss 1.2353  val_accuracy 0.5008  (169 s)
+15:07:04    [resnet18 fold 4/5] epoch  1/12  loss 1.3618  accuracy 0.4208  val_loss 1.3376  val_accuracy 0.4500  (28 s)
+15:07:22    [resnet18 fold 4/5] epoch  2/12  loss 1.2653  accuracy 0.4809  val_loss 1.2754  val_accuracy 0.4531  (46 s)
+15:07:35    [resnet18 fold 4/5] epoch  3/12  loss 1.2995  accuracy 0.4896  val_loss 1.3821  val_accuracy 0.4437  (59 s)
+15:07:48    [resnet18 fold 4/5] epoch  4/12  loss 1.2003  accuracy 0.5155  val_loss 1.2706  val_accuracy 0.4734  (72 s)
+15:08:02    [resnet18 fold 4/5] epoch  5/12  loss 1.0836  accuracy 0.5776  val_loss 1.2426  val_accuracy 0.5016  (86 s)
+15:08:14    [resnet18 fold 4/5] epoch  6/12  loss 1.0392  accuracy 0.5988  val_loss 1.2435  val_accuracy 0.4922  (98 s)
+15:08:26    [resnet18 fold 4/5] epoch  7/12  loss 0.9217  accuracy 0.6589  val_loss 1.2051  val_accuracy 0.4969  (110 s)
+15:08:38    [resnet18 fold 4/5] epoch  8/12  loss 0.8351  accuracy 0.6943  val_loss 1.1926  val_accuracy 0.5328  (122 s)
+15:08:49    [resnet18 fold 4/5] epoch  9/12  loss 0.7803  accuracy 0.7348  val_loss 1.1877  val_accuracy 0.5109  (133 s)
+15:09:01    [resnet18 fold 4/5] epoch 10/12  loss 0.6797  accuracy 0.7874  val_loss 1.1574  val_accuracy 0.5453  (145 s)
+15:09:12    [resnet18 fold 4/5] epoch 11/12  loss 0.6490  accuracy 0.7925  val_loss 1.1849  val_accuracy 0.5281  (156 s)
+15:09:24    [resnet18 fold 4/5] epoch 12/12  loss 0.6335  accuracy 0.8008  val_loss 1.1721  val_accuracy 0.5406  (168 s)
+15:09:38    [resnet18 fold 5/5] epoch  1/12  loss 1.4038  accuracy 0.4096  val_loss 1.4235  val_accuracy 0.3758  (13 s)
+15:09:49    [resnet18 fold 5/5] epoch  2/12  loss 1.2693  accuracy 0.4912  val_loss 1.3491  val_accuracy 0.4198  (25 s)
+15:10:01    [resnet18 fold 5/5] epoch  3/12  loss 1.2476  accuracy 0.4900  val_loss 1.3430  val_accuracy 0.4403  (37 s)
+15:10:16    [resnet18 fold 5/5] epoch  4/12  loss 1.1509  accuracy 0.5386  val_loss 1.2804  val_accuracy 0.4780  (51 s)
+15:10:33    [resnet18 fold 5/5] epoch  5/12  loss 1.0725  accuracy 0.5736  val_loss 1.2585  val_accuracy 0.4748  (68 s)
+15:10:49    [resnet18 fold 5/5] epoch  6/12  loss 0.9932  accuracy 0.6116  val_loss 1.2126  val_accuracy 0.5189  (84 s)
+15:11:07    [resnet18 fold 5/5] epoch  7/12  loss 0.9576  accuracy 0.6363  val_loss 1.2519  val_accuracy 0.5157  (102 s)
+15:11:21    [resnet18 fold 5/5] epoch  8/12  loss 0.8211  accuracy 0.7062  val_loss 1.1961  val_accuracy 0.5173  (116 s)
+15:11:39    [resnet18 fold 5/5] epoch  9/12  loss 0.7502  accuracy 0.7474  val_loss 1.1893  val_accuracy 0.5377  (134 s)
+15:11:56    [resnet18 fold 5/5] epoch 10/12  loss 0.6916  accuracy 0.7678  val_loss 1.2203  val_accuracy 0.5267  (151 s)
+15:12:17    [resnet18 fold 5/5] epoch 11/12  loss 0.6505  accuracy 0.7885  val_loss 1.2140  val_accuracy 0.5425  (172 s)
+15:12:38    [resnet18 fold 5/5] epoch 12/12  loss 0.6604  accuracy 0.7882  val_loss 1.2300  val_accuracy 0.5346  (193 s)
+15:12:39  [Stage 4b] resnet18 fine-tuned: OOF Macro-F1 0.5126, accuracy 0.5168, log-loss 1.2167
+/Users/sangeet516a/Documents/pixels2provenance/src/p2p/finetune.py:167: UserWarning: The given NumPy array is not writable, and PyTorch does not support non-writable tensors. This means writing to this tensor will result in undefined behavior. You may want to copy the array to protect its data or make it writable before converting it to a tensor. This type of warning will be suppressed for the rest of this program. (Triggered internally at /Users/runner/work/pytorch/pytorch/torch/csrc/utils/tensor_numpy.cpp:219.)
+  y_t = torch.as_tensor(np.asarray(y), dtype=torch.long)
+15:13:01    [resnet18 final] epoch  1/12  loss 1.3774  accuracy 0.4188  (22 s)
+15:13:21    [resnet18 final] epoch  2/12  loss 1.2547  accuracy 0.5168  (41 s)
+15:13:41    [resnet18 final] epoch  3/12  loss 1.2117  accuracy 0.5052  (61 s)
+15:13:59    [resnet18 final] epoch  4/12  loss 1.1697  accuracy 0.5385  (79 s)
+15:14:19    [resnet18 final] epoch  5/12  loss 1.0756  accuracy 0.5664  (100 s)
+15:14:41    [resnet18 final] epoch  6/12  loss 0.9860  accuracy 0.6235  (121 s)
+15:14:57    [resnet18 final] epoch  7/12  loss 0.9693  accuracy 0.6383  (137 s)
+15:15:10    [resnet18 final] epoch  8/12  loss 0.9210  accuracy 0.6477  (150 s)
+15:15:22    [resnet18 final] epoch  9/12  loss 0.8215  accuracy 0.7061  (163 s)
+15:15:38    [resnet18 final] epoch 10/12  loss 0.7166  accuracy 0.7560  (178 s)
+15:15:59    [resnet18 final] epoch 11/12  loss 0.7031  accuracy 0.7724  (200 s)
+15:16:12    [resnet18 final] epoch 12/12  loss 0.6988  accuracy 0.7749  (212 s)
+15:16:36    [resnet18] predicted 512 / 12,556 galaxies (23 s)
+15:18:57    [resnet18] predicted 5,632 / 12,556 galaxies (164 s)
+15:21:04    [resnet18] predicted 10,752 / 12,556 galaxies (291 s)
+15:22:07    [efficientnet_b0 fold 1/5] epoch  1/12  loss 1.5608  accuracy 0.3013  val_loss 1.5497  val_accuracy 0.3160  (22 s)
+15:22:24    [efficientnet_b0 fold 1/5] epoch  2/12  loss 1.3577  accuracy 0.4433  val_loss 1.4116  val_accuracy 0.4198  (39 s)
+15:22:41    [efficientnet_b0 fold 1/5] epoch  3/12  loss 1.1630  accuracy 0.5528  val_loss 1.2944  val_accuracy 0.4796  (56 s)
+15:22:58    [efficientnet_b0 fold 1/5] epoch  4/12  loss 1.0704  accuracy 0.5802  val_loss 1.2477  val_accuracy 0.4969  (73 s)
+15:23:15    [efficientnet_b0 fold 1/5] epoch  5/12  loss 1.0349  accuracy 0.6112  val_loss 1.2752  val_accuracy 0.4748  (90 s)
+15:23:32    [efficientnet_b0 fold 1/5] epoch  6/12  loss 0.9652  accuracy 0.6399  val_loss 1.2588  val_accuracy 0.4921  (108 s)
+15:23:51    [efficientnet_b0 fold 1/5] epoch  7/12  loss 0.8958  accuracy 0.6916  val_loss 1.2676  val_accuracy 0.4874  (126 s)
+15:24:35    [efficientnet_b0 fold 1/5] epoch  8/12  loss 0.7761  accuracy 0.7285  val_loss 1.2462  val_accuracy 0.4937  (170 s)
+15:25:03    [efficientnet_b0 fold 1/5] epoch  9/12  loss 0.7220  accuracy 0.7717  val_loss 1.2289  val_accuracy 0.4937  (198 s)
+15:25:27    [efficientnet_b0 fold 1/5] epoch 10/12  loss 0.7198  accuracy 0.7615  val_loss 1.2596  val_accuracy 0.5047  (222 s)
+15:25:51    [efficientnet_b0 fold 1/5] epoch 11/12  loss 0.7038  accuracy 0.7709  val_loss 1.2595  val_accuracy 0.5189  (246 s)
+15:26:14    [efficientnet_b0 fold 1/5] epoch 12/12  loss 0.6892  accuracy 0.7823  val_loss 1.2417  val_accuracy 0.5047  (269 s)
+15:26:42    [efficientnet_b0 fold 2/5] epoch  1/12  loss 1.5386  accuracy 0.3078  val_loss 1.5295  val_accuracy 0.3370  (27 s)
+15:27:05    [efficientnet_b0 fold 2/5] epoch  2/12  loss 1.3137  accuracy 0.4853  val_loss 1.3484  val_accuracy 0.4687  (49 s)
+15:27:28    [efficientnet_b0 fold 2/5] epoch  3/12  loss 1.1983  accuracy 0.5351  val_loss 1.2904  val_accuracy 0.4937  (72 s)
+15:28:02    [efficientnet_b0 fold 2/5] epoch  4/12  loss 1.1287  accuracy 0.5705  val_loss 1.2398  val_accuracy 0.5078  (107 s)
+15:28:27    [efficientnet_b0 fold 2/5] epoch  5/12  loss 1.0314  accuracy 0.5936  val_loss 1.2310  val_accuracy 0.5047  (131 s)
+15:28:52    [efficientnet_b0 fold 2/5] epoch  6/12  loss 0.9573  accuracy 0.6313  val_loss 1.2310  val_accuracy 0.5157  (156 s)
+15:29:16    [efficientnet_b0 fold 2/5] epoch  7/12  loss 0.9104  accuracy 0.6631  val_loss 1.2146  val_accuracy 0.5361  (180 s)
+15:30:37    [efficientnet_b0 fold 2/5] epoch  8/12  loss 0.8129  accuracy 0.7091  val_loss 1.1977  val_accuracy 0.5125  (262 s)
+15:31:12    [efficientnet_b0 fold 2/5] epoch  9/12  loss 0.7568  accuracy 0.7464  val_loss 1.2077  val_accuracy 0.5125  (296 s)
+15:31:47    [efficientnet_b0 fold 2/5] epoch 10/12  loss 0.7265  accuracy 0.7495  val_loss 1.2025  val_accuracy 0.5282  (332 s)
+15:32:25    [efficientnet_b0 fold 2/5] epoch 11/12  loss 0.6970  accuracy 0.7676  val_loss 1.1894  val_accuracy 0.5298  (369 s)
+15:33:00    [efficientnet_b0 fold 2/5] epoch 12/12  loss 0.7083  accuracy 0.7640  val_loss 1.2015  val_accuracy 0.5219  (404 s)
+15:34:08    [efficientnet_b0 fold 3/5] epoch  1/12  loss 1.5510  accuracy 0.2937  val_loss 1.5647  val_accuracy 0.2630  (64 s)
+15:34:54    [efficientnet_b0 fold 3/5] epoch  2/12  loss 1.3199  accuracy 0.4729  val_loss 1.3873  val_accuracy 0.4331  (110 s)
+15:35:31    [efficientnet_b0 fold 3/5] epoch  3/12  loss 1.1882  accuracy 0.5353  val_loss 1.2889  val_accuracy 0.4929  (147 s)
+15:36:02    [efficientnet_b0 fold 3/5] epoch  4/12  loss 1.1158  accuracy 0.5682  val_loss 1.2529  val_accuracy 0.4740  (179 s)
+15:36:32    [efficientnet_b0 fold 3/5] epoch  5/12  loss 0.9967  accuracy 0.6267  val_loss 1.2362  val_accuracy 0.4882  (209 s)
+15:36:59    [efficientnet_b0 fold 3/5] epoch  6/12  loss 0.9168  accuracy 0.6957  val_loss 1.2327  val_accuracy 0.5024  (235 s)
+15:37:26    [efficientnet_b0 fold 3/5] epoch  7/12  loss 0.8728  accuracy 0.6886  val_loss 1.2433  val_accuracy 0.5008  (262 s)
+15:37:52    [efficientnet_b0 fold 3/5] epoch  8/12  loss 0.7889  accuracy 0.7275  val_loss 1.2112  val_accuracy 0.5071  (289 s)
+15:39:02    [efficientnet_b0 fold 3/5] epoch  9/12  loss 0.7526  accuracy 0.7459  val_loss 1.2311  val_accuracy 0.5039  (359 s)
+15:39:30    [efficientnet_b0 fold 3/5] epoch 10/12  loss 0.7015  accuracy 0.7722  val_loss 1.2098  val_accuracy 0.5228  (386 s)
+15:40:00    [efficientnet_b0 fold 3/5] epoch 11/12  loss 0.6949  accuracy 0.7753  val_loss 1.2186  val_accuracy 0.5165  (416 s)
+15:40:28    [efficientnet_b0 fold 3/5] epoch 12/12  loss 0.6930  accuracy 0.7780  val_loss 1.2124  val_accuracy 0.5165  (444 s)
+15:41:38    [efficientnet_b0 fold 4/5] epoch  1/12  loss 1.5648  accuracy 0.2837  val_loss 1.5634  val_accuracy 0.2812  (63 s)
+15:42:22    [efficientnet_b0 fold 4/5] epoch  2/12  loss 1.3417  accuracy 0.4821  val_loss 1.3766  val_accuracy 0.4531  (106 s)
+15:42:59    [efficientnet_b0 fold 4/5] epoch  3/12  loss 1.2101  accuracy 0.5375  val_loss 1.2880  val_accuracy 0.4938  (143 s)
+15:43:28    [efficientnet_b0 fold 4/5] epoch  4/12  loss 1.1405  accuracy 0.5572  val_loss 1.2599  val_accuracy 0.5078  (173 s)
+15:44:00    [efficientnet_b0 fold 4/5] epoch  5/12  loss 1.0323  accuracy 0.6098  val_loss 1.2305  val_accuracy 0.5125  (205 s)
+15:44:27    [efficientnet_b0 fold 4/5] epoch  6/12  loss 0.9521  accuracy 0.6495  val_loss 1.2119  val_accuracy 0.5109  (232 s)
+15:44:54    [efficientnet_b0 fold 4/5] epoch  7/12  loss 0.8642  accuracy 0.6963  val_loss 1.1973  val_accuracy 0.5281  (259 s)
+15:45:20    [efficientnet_b0 fold 4/5] epoch  8/12  loss 0.8036  accuracy 0.7277  val_loss 1.1781  val_accuracy 0.5156  (285 s)
+15:45:46    [efficientnet_b0 fold 4/5] epoch  9/12  loss 0.7607  accuracy 0.7513  val_loss 1.1881  val_accuracy 0.5172  (311 s)
+15:46:13    [efficientnet_b0 fold 4/5] epoch 10/12  loss 0.7181  accuracy 0.7599  val_loss 1.2026  val_accuracy 0.5094  (337 s)
+15:46:39    [efficientnet_b0 fold 4/5] epoch 11/12  loss 0.7118  accuracy 0.7749  val_loss 1.1993  val_accuracy 0.5188  (364 s)
+15:47:06    [efficientnet_b0 fold 4/5] epoch 12/12  loss 0.7062  accuracy 0.7768  val_loss 1.1978  val_accuracy 0.5219  (390 s)
+15:47:38    [efficientnet_b0 fold 5/5] epoch  1/12  loss 1.5467  accuracy 0.3044  val_loss 1.5526  val_accuracy 0.3129  (30 s)
+15:48:05    [efficientnet_b0 fold 5/5] epoch  2/12  loss 1.3445  accuracy 0.4649  val_loss 1.3765  val_accuracy 0.4371  (58 s)
+15:48:32    [efficientnet_b0 fold 5/5] epoch  3/12  loss 1.1903  accuracy 0.5202  val_loss 1.2834  val_accuracy 0.4575  (85 s)
+15:48:59    [efficientnet_b0 fold 5/5] epoch  4/12  loss 1.0832  accuracy 0.5783  val_loss 1.2417  val_accuracy 0.5063  (111 s)
+15:49:26    [efficientnet_b0 fold 5/5] epoch  5/12  loss 1.0258  accuracy 0.6171  val_loss 1.2711  val_accuracy 0.4623  (138 s)
+15:49:52    [efficientnet_b0 fold 5/5] epoch  6/12  loss 0.9238  accuracy 0.6673  val_loss 1.2266  val_accuracy 0.4906  (164 s)
+15:50:18    [efficientnet_b0 fold 5/5] epoch  7/12  loss 0.8797  accuracy 0.6873  val_loss 1.2072  val_accuracy 0.4874  (191 s)
+15:50:45    [efficientnet_b0 fold 5/5] epoch  8/12  loss 0.7927  accuracy 0.7128  val_loss 1.1947  val_accuracy 0.5126  (217 s)
+15:51:12    [efficientnet_b0 fold 5/5] epoch  9/12  loss 0.7489  accuracy 0.7430  val_loss 1.2036  val_accuracy 0.5126  (244 s)
+15:51:38    [efficientnet_b0 fold 5/5] epoch 10/12  loss 0.7112  accuracy 0.7666  val_loss 1.1998  val_accuracy 0.5031  (270 s)
+15:52:05    [efficientnet_b0 fold 5/5] epoch 11/12  loss 0.6853  accuracy 0.7748  val_loss 1.1987  val_accuracy 0.5189  (297 s)
+15:52:31    [efficientnet_b0 fold 5/5] epoch 12/12  loss 0.7065  accuracy 0.7607  val_loss 1.2121  val_accuracy 0.5079  (323 s)
+15:52:32  [Stage 4b] efficientnet_b0 fine-tuned: OOF Macro-F1 0.5136, accuracy 0.5146, log-loss 1.2131
+15:52:58    [efficientnet_b0 final] epoch  1/12  loss 1.5426  accuracy 0.3168  (26 s)
+15:53:23    [efficientnet_b0 final] epoch  2/12  loss 1.3223  accuracy 0.4760  (51 s)
+15:53:49    [efficientnet_b0 final] epoch  3/12  loss 1.2002  accuracy 0.5363  (77 s)
+15:54:14    [efficientnet_b0 final] epoch  4/12  loss 1.0709  accuracy 0.5878  (102 s)
+15:54:39    [efficientnet_b0 final] epoch  5/12  loss 1.0420  accuracy 0.6107  (127 s)
+15:55:04    [efficientnet_b0 final] epoch  6/12  loss 0.9353  accuracy 0.6540  (152 s)
+15:55:29    [efficientnet_b0 final] epoch  7/12  loss 0.8673  accuracy 0.6954  (177 s)
+15:55:55    [efficientnet_b0 final] epoch  8/12  loss 0.7814  accuracy 0.7265  (203 s)
+15:56:20    [efficientnet_b0 final] epoch  9/12  loss 0.7328  accuracy 0.7441  (228 s)
+15:56:45    [efficientnet_b0 final] epoch 10/12  loss 0.7003  accuracy 0.7711  (253 s)
+15:57:10    [efficientnet_b0 final] epoch 11/12  loss 0.6913  accuracy 0.7786  (278 s)
+15:57:35    [efficientnet_b0 final] epoch 12/12  loss 0.6800  accuracy 0.7815  (303 s)
+15:58:01    [efficientnet_b0] predicted 512 / 12,556 galaxies (26 s)
+16:01:26    [efficientnet_b0] predicted 5,632 / 12,556 galaxies (230 s)
+16:06:35    [efficientnet_b0] predicted 10,752 / 12,556 galaxies (539 s)
+16:08:25  [Stage 4b] members and combinations (out-of-fold, same folds; equal-weight averages):
+                                                     members  final_model  macro_f1  ci_low  ci_high  accuracy  log_loss  fold_sd
+xgb_fusion + xgb_physical + resnet18_ft + efficientnet_b0_ft         True    0.5514  0.5331   0.5690    0.5560    1.1339   0.0264
+              xgb_fusion + xgb_physical + efficientnet_b0_ft        False    0.5491  0.5307   0.5669    0.5510    1.1395   0.0204
+                                  xgb_physical + resnet18_ft        False    0.5466  0.5274   0.5647    0.5498    1.1549   0.0220
+                     xgb_fusion + xgb_physical + resnet18_ft        False    0.5466  0.5281   0.5649    0.5501    1.1411   0.0251
+             xgb_physical + resnet18_ft + efficientnet_b0_ft        False    0.5464  0.5272   0.5646    0.5498    1.1449   0.0176
+                           xgb_physical + efficientnet_b0_ft        False    0.5442  0.5254   0.5606    0.5463    1.1536   0.0184
+                                    xgb_fusion + resnet18_ft        False    0.5431  0.5250   0.5606    0.5482    1.1420   0.0270
+               xgb_fusion + resnet18_ft + efficientnet_b0_ft        False    0.5422  0.5241   0.5599    0.5457    1.1380   0.0229
+                             xgb_fusion + efficientnet_b0_ft        False    0.5399  0.5222   0.5573    0.5429    1.1393   0.0216
+                                                  xgb_fusion        False    0.5316  0.5134   0.5501    0.5359    1.1651   0.0336
+                                   xgb_fusion + xgb_physical        False    0.5285  0.5109   0.5472    0.5316    1.1680   0.0287
+                            resnet18_ft + efficientnet_b0_ft        False    0.5280  0.5093   0.5449    0.5316    1.1770   0.0213
+                                                xgb_physical        False    0.5158  0.4989   0.5351    0.5171    1.2127   0.0303
+                                          efficientnet_b0_ft        False    0.5136  0.4953   0.5298    0.5146    1.2131   0.0116
+                                                 resnet18_ft        False    0.5126  0.4952   0.5292    0.5168    1.2167   0.0209
+16:08:26  [Stage 4b] 220 buffer galaxies in training (supervised.train_on_buffer); out-of-fold score without them: Macro-F1 0.5537, accuracy 0.5578 (n = 2965)
+16:08:26  [Stage 4b] FINAL MODEL = equal-weight average of ['resnet18_ft', 'efficientnet_b0_ft', 'xgb_physical', 'xgb_fusion']
+16:08:26  [Stage 4b] out-of-fold scores in detail:
+  class            precision  recall     F1   support
+  Smooth              0.596   0.653  0.623      380
+  FaceOnSpiral        0.627   0.517  0.567      716
+  EdgeOn              0.622   0.605  0.613      767
+  Irregular           0.522   0.572  0.546      877
+  Ambiguous           0.396   0.420  0.408      445
+  shape given to 2713 of 3185 galaxies (85.2%); on those: accuracy 0.5839, 4-class Macro-F1 0.6188; where the GZH label is a shape too (n = 2455): accuracy 0.6452, Macro-F1 0.6531
+  4 classes (no Ambiguous): Macro-F1 0.6292, accuracy 0.6234 (n = 2740)
+  GZH agreement >=0.5: Macro-F1 0.5742, accuracy 0.5747 (n = 2772)
+  GZH agreement >=0.7: Macro-F1 0.6925, accuracy 0.6963 (n = 1090)
+  dev galaxies only: Macro-F1 0.4823, accuracy 0.4746 (n = 295)
+16:08:44  [Stage 4b] merger XGBoost: 209 mergers of 3185; 200 trees (OOF log-loss 0.2162); OOF merger PR-AUC 0.224 (prevalence 0.0656)
+16:08:45  [Stage 4b] CNN PCA (all pooled galaxies): {'resnet18': (0, 32), 'efficientnet_b0': (32, 64), 'physical': (64, 82)} | explained variance {'resnet18': 0.8267, 'efficientnet_b0': 0.7183}
+16:08:51  [Stage 4b] model summary:
+==================================================================
+Model: "Stage 4b - XGBoost (feature fusion)"
+==================================================================
+input            resnet18 32 + efficientnet_b0 32 + physical 18 = 82 features (raw 1,792 CNN columns -> PCA per block)
+ensemble weights w1 ResNet-18 0.333 | w2 EfficientNet-B0 0.333 | w3 physical 0.334
+objective        multi:softprob (5 classes)
+boosting rounds  175 (x 5 classes = 875 trees)
+leaves           34,852 in total, 39.83 per tree
+parameters       max_depth=6, learning_rate=0.05, subsample=0.8, colsample_bytree=0.3, min_child_weight=2, reg_lambda=1.0, reg_alpha=0.0, tree_method=hist
+------------------------------------------------------------------
+importance (total gain) by block: resnet18 33.9%, efficientnet_b0 34.4%, physical 31.7%
+top 15 features:
+  ellipticity             2.91%
+  colour_2                2.88%
+  intensity               2.82%
+  colour_1                2.57%
+  band_consistency        2.49%
+  fwhm_over_psf           1.85%
+  resnet18_pc1            1.70%
+  mag                     1.65%
+  efficientnet_b0_pc11    1.62%
+  snr                     1.59%
+  m20                     1.57%
+  resnet18_pc4            1.56%
+  multimode               1.56%
+  efficientnet_b0_pc1     1.54%
+  r_half                  1.47%
+==================================================================
+16:08:51  [Stage 4b] out-of-fold result: accuracy 0.556 | Macro-F1 0.5514 (95% CI [0.5331, 0.569]) | balanced accuracy 0.5534 | log-loss 1.1339 | per fold [0.539, 0.5545, 0.5293, 0.5947, 0.5352] | importance by block {'resnet18': 0.3389, 'efficientnet_b0': 0.3444, 'physical': 0.3167}
+16:08:51  [Stage 4b] ok in 5030.2 s
+16:08:51  ==============================================================================
+16:08:51  Stage 4c - Probability calibration
+16:08:51  ==============================================================================
+16:08:52  [Stage 4c] calibration model: T = 0.8425 (morphology), Platt a = 0.6731, b = -0.8071 (merger) - fitted on 3185 out-of-fold galaxies
+16:08:52  [Stage 4c] accuracy 0.556 (unchanged by T) | log-loss 1.1339 -> 1.1255 | ECE morphology 0.0448 -> 0.0139 | ECE merger 0.0147 -> 0.0069 | merger threshold 0.1822
+16:08:52  [Stage 4c] ok in 0.4 s
+16:08:52  ==============================================================================
+16:08:52  Stage 4d - Controlled ablation
+16:08:52  ==============================================================================
+/Users/sangeet516a/Documents/pixels2provenance/src/p2p/context.py:179: DtypeWarning: Columns (33: cr_candidate) have mixed types. Specify dtype option on import or set low_memory=False.
+  t = pd.read_csv(ctx.require(key, name))
+16:09:11    [ablation] ResNet-18 features only                              accuracy 0.405  Macro-F1 0.379  log-loss 1.397
+16:09:28    [ablation] EfficientNet-B0 features only                        accuracy 0.441  Macro-F1 0.422  log-loss 1.347
+16:09:42    [ablation] Physical features only (classical)                   accuracy 0.520  Macro-F1 0.518  log-loss 1.213
+16:10:03    [ablation] CNN features only (ResNet-18 + EfficientNet-B0)      accuracy 0.455  Macro-F1 0.437  log-loss 1.322
+16:10:04    [ablation] Full fusion XGBoost (frozen CNN + physical)          accuracy 0.536  Macro-F1 0.532  log-loss 1.165
+16:10:05    [ablation] Physical XGBoost (member)                            accuracy 0.517  Macro-F1 0.516  log-loss 1.213
+16:10:06    [ablation] Fine-tuned ResNet-18 only                            accuracy 0.517  Macro-F1 0.513  log-loss 1.217
+16:10:07    [ablation] Fine-tuned EfficientNet-B0 only                      accuracy 0.515  Macro-F1 0.514  log-loss 1.213
+16:10:09    [ablation] Fine-tuned CNNs only (average of both)               accuracy 0.532  Macro-F1 0.528  log-loss 1.177
+16:10:10    [ablation] Final ensemble (Stage 4b)                            accuracy 0.556  Macro-F1 0.551  log-loss 1.134
+16:10:11    [ablation] Final ensemble + calibration (final model)           accuracy 0.556  Macro-F1 0.551  log-loss 1.125
+16:18:04    [ablation] Full fusion without CNN PCA (all 1,806 raw columns)  accuracy 0.530  Macro-F1 0.524  log-loss 1.170
+16:18:28    [ablation] Full fusion without label-confidence weights         accuracy 0.530  Macro-F1 0.526  log-loss 1.170
+16:18:28  [Stage 4d] CNN features of the whole 128 px cutout (first-run input) for 3185 galaxies ...
+16:19:51    [ablation] Full fusion, whole 128 px cutout (no crop / mask / CR clean / rotations) accuracy 0.532  Macro-F1 0.527  log-loss 1.174
+16:19:51  [Stage 4d] CNN features at 128 px for the 3185 labelled galaxies ...
+16:22:14    [ablation] Full fusion, 128 px CNN input                        accuracy 0.540  Macro-F1 0.535  log-loss 1.155
+16:22:14  [Stage 4d]
+                                                           configuration                                         representation  n_features  trees  accuracy  macro_f1  macro_f1_ci_low  macro_f1_ci_high  fold_sd  balanced_acc  log_loss  merger_pr_auc    ece  shape_coverage  shape_accuracy  shape_macro_f1  star_precision  star_recall  star_f1
+                                                 ResNet-18 features only                                               resnet18        32.0  175.0    0.4047    0.3787           0.3615            0.3955   0.0236        0.3756    1.3967            NaN 0.0229          0.8829          0.4171          0.4220             NaN          NaN      NaN
+                                           EfficientNet-B0 features only                                        efficientnet_b0        32.0  200.0    0.4405    0.4216           0.4045            0.4392   0.0313        0.4167    1.3465            NaN 0.0244          0.8832          0.4554          0.4742             NaN          NaN      NaN
+                                      Physical features only (classical)                                               physical        18.0  200.0    0.5203    0.5183           0.5008            0.5364   0.0266        0.5185    1.2130            NaN 0.0160          0.8553          0.5415          0.5763             NaN          NaN      NaN
+                         CNN features only (ResNet-18 + EfficientNet-B0)                               resnet18+efficientnet_b0        64.0  175.0    0.4549    0.4366           0.4192            0.4542   0.0260        0.4296    1.3220            NaN 0.0276          0.8904          0.4683          0.4896             NaN          NaN      NaN
+                             Full fusion XGBoost (frozen CNN + physical)                                             xgb_fusion         NaN  175.0    0.5359    0.5316           0.5134            0.5501   0.0336        0.5270    1.1651            NaN 0.0242          0.8716          0.5548          0.5921             NaN          NaN      NaN
+                                               Physical XGBoost (member)                                           xgb_physical         NaN    NaN    0.5171    0.5158           0.4989            0.5351   0.0303        0.5151    1.2127            NaN 0.0202          0.8571          0.5385          0.5749             NaN          NaN      NaN
+                                               Fine-tuned ResNet-18 only                                            resnet18_ft         NaN    NaN    0.5168    0.5126           0.4952            0.5292   0.0209        0.5204    1.2167            NaN 0.0406          0.8283          0.5519          0.5823             NaN          NaN      NaN
+                                         Fine-tuned EfficientNet-B0 only                                     efficientnet_b0_ft         NaN    NaN    0.5146    0.5136           0.4953            0.5298   0.0116        0.5251    1.2131            NaN 0.0412          0.8166          0.5540          0.5868             NaN          NaN      NaN
+                                  Fine-tuned CNNs only (average of both)                         resnet18_ft+efficientnet_b0_ft         NaN    NaN    0.5316    0.5280           0.5093            0.5449   0.0213        0.5372    1.1770            NaN 0.0243          0.8305          0.5664          0.5979             NaN          NaN      NaN
+                                               Final ensemble (Stage 4b) resnet18_ft+efficientnet_b0_ft+xgb_physical+xgb_fusion         NaN    NaN    0.5560    0.5514           0.5331            0.5690   0.0264        0.5534    1.1339          0.224 0.0448          0.8518          0.5839          0.6188             NaN          NaN      NaN
+                              Final ensemble + calibration (final model) resnet18_ft+efficientnet_b0_ft+xgb_physical+xgb_fusion         NaN    NaN    0.5560    0.5514           0.5331            0.5690   0.0264        0.5534    1.1255          0.224 0.0139          0.8518          0.5839          0.6188             NaN          NaN      NaN
+                     Full fusion without CNN PCA (all 1,806 raw columns)                      resnet18+efficientnet_b0+physical      1810.0  150.0    0.5300    0.5240           0.5062            0.5430   0.0227        0.5203    1.1696            NaN 0.0532          0.8772          0.5476          0.5855             NaN          NaN      NaN
+                            Full fusion without label-confidence weights                      resnet18+efficientnet_b0+physical        82.0  200.0    0.5297    0.5263           0.5087            0.5430   0.0324        0.5207    1.1704            NaN 0.0338          0.8766          0.5466          0.5853             NaN          NaN      NaN
+Full fusion, whole 128 px cutout (no crop / mask / CR clean / rotations)                      resnet18+efficientnet_b0+physical        82.0  175.0    0.5316    0.5273           0.5090            0.5447   0.0238        0.5221    1.1741            NaN 0.0311          0.8691          0.5502          0.5878             NaN          NaN      NaN
+                                           Full fusion, 128 px CNN input                      resnet18+efficientnet_b0+physical        82.0  175.0    0.5397    0.5346           0.5142            0.5524   0.0294        0.5303    1.1546            NaN 0.0323          0.8706          0.5593          0.5967             NaN          NaN      NaN
+                             Baseline segregator (Stage 2c, no Gaia leg)                                                    NaN         NaN    NaN       NaN       NaN              NaN               NaN      NaN           NaN       NaN            NaN    NaN             NaN             NaN             NaN           0.615         0.60    0.608
+                                            CAE + GMM/HDBSCAN (Stage 2d)                                                    NaN         NaN    NaN       NaN       NaN              NaN               NaN      NaN           NaN       NaN            NaN    NaN             NaN             NaN             NaN           0.347         0.65    0.452
+16:22:14  [Stage 4d] final ensemble minus the best single source (images only or physics only) = +0.0234 -> Minimum
+16:22:14  [Stage 4d] ok in 802.7 s
+16:22:14  ==============================================================================
+16:22:14  Stage 6a - In-domain test (run once)
+16:22:14  ==============================================================================
+16:22:14  [Stage 6a] WARNING: the test split was already evaluated 3 time(s). Report the FIRST result and do not tune on these numbers.
+/Users/sangeet516a/Documents/pixels2provenance/src/p2p/context.py:179: DtypeWarning: Columns (33: cr_candidate) have mixed types. Specify dtype option on import or set low_memory=False.
+  t = pd.read_csv(ctx.require(key, name))
+16:22:19  [Stage 6a] test n=328: accuracy 0.5427 | Macro-F1 0.548 (95% CI 0.494-0.599) | balanced acc 0.5445 | merger PR-AUC 0.1313 (95% CI 0.027-0.409, 10 mergers) | ECE 0.0744 (95% CI 0.060-0.134) | majority-class F1 0.0839
+16:22:19  [Stage 6a] shape given to 289 of 328 galaxies (88.1%); on those: accuracy 0.5502, 4-class Macro-F1 0.5957; where the GZH label is a shape too (n = 261): accuracy 0.6092, Macro-F1 0.6263
+16:22:19  [Stage 6a] tiers: {'Morphology Macro-F1': 'Minimum', 'Merger PR-AUC': 'Minimum', 'Calibration ECE': 'Minimum'}
+16:22:19  [Stage 6a] ok in 4.8 s
+16:22:19  ==============================================================================
+16:22:19  Stage 6b - Uncertainty audit
+16:22:19  ==============================================================================
+/Users/sangeet516a/Documents/pixels2provenance/src/p2p/context.py:179: DtypeWarning: Columns (33: cr_candidate) have mixed types. Specify dtype option on import or set low_memory=False.
+  t = pd.read_csv(ctx.require(key, name))
+16:22:20  [Stage 6b] {'n_test': 328, 'spearman_entropy_vs_disagreement': 0.2269, 'spearman_p': 3.3489734153556955e-05, 'n_boundary': 45, 'n_confident': 283, 'mean_entropy_boundary': 0.7689076362824697, 'mean_entropy_confident': 0.6615620611739422, 'accuracy_boundary': 0.35555555555555557, 'accuracy_confident': 0.5724381625441696, 'mannwhitney_p_boundary_gt_confident': 0.00042550880740122943}
+16:22:20  [Stage 6b] ok in 0.4 s
+16:22:20  ==============================================================================
+16:22:20  Stage 6c - Explainable AI (SHAP)
+16:22:20  ==============================================================================
+/Users/sangeet516a/Documents/pixels2provenance/src/p2p/context.py:179: DtypeWarning: Columns (33: cr_candidate) have mixed types. Specify dtype option on import or set low_memory=False.
+  t = pd.read_csv(ctx.require(key, name))
+16:22:38  [Stage 6c] Grad-CAM: mean share of the heat in the central half of the stamp {'resnet18': 0.48, 'efficientnet_b0': 0.364} (gradcam_<network>.png)
+16:22:38  [Stage 6c] share of |SHAP| by ENSEMBLE block:
+              resnet18  efficientnet_b0  physical
+Smooth           0.169            0.218     0.613
+FaceOnSpiral     0.266            0.274     0.460
+EdgeOn           0.223            0.337     0.440
+Irregular        0.203            0.222     0.575
+Ambiguous        0.304            0.296     0.400
+[Stage 6c] physical features (mean |SHAP|, fusion XGBoost):
+              fwhm_over_psf  band_consistency   gini    m20  concentration  asymmetry  smoothness  sersic_n  r_half  ellipticity    mag    snr  colour_1  colour_2  shape_asymmetry  multimode  intensity  deviation
+Smooth                0.036             0.133  0.037  0.163          0.048      0.218       0.035     0.138   0.053        0.030  0.043  0.014     0.625     0.403            0.064      0.133      0.121      0.067
+FaceOnSpiral          0.133             0.041  0.053  0.041          0.021      0.050       0.021     0.028   0.162        0.182  0.131  0.073     0.081     0.053            0.027      0.017      0.157      0.043
+EdgeOn                0.088             0.027  0.056  0.036          0.118      0.033       0.028     0.030   0.019        0.519  0.030  0.025     0.086     0.148            0.010      0.018      0.030      0.044
+Irregular             0.012             0.120  0.028  0.057          0.066      0.133       0.047     0.034   0.039        0.084  0.107  0.158     0.221     0.056            0.153      0.067      0.019      0.068
+Ambiguous             0.088             0.088  0.058  0.019          0.035      0.033       0.020     0.082   0.041        0.141  0.023  0.017     0.032     0.245            0.030      0.021      0.031      0.025
+[Stage 6c] physical features (mean |SHAP|, physical XGBoost member):
+              fwhm_over_psf  band_consistency   gini    m20  concentration  asymmetry  smoothness  sersic_n  r_half  ellipticity    mag    snr  colour_1  colour_2  shape_asymmetry  multimode  intensity  deviation
+Smooth                0.074             0.170  0.090  0.183          0.080      0.218       0.065     0.181   0.113        0.078  0.080  0.080     0.531     0.334            0.140      0.206      0.140      0.103
+FaceOnSpiral          0.163             0.053  0.083  0.070          0.049      0.076       0.099     0.078   0.173        0.250  0.184  0.106     0.127     0.111            0.033      0.059      0.204      0.063
+EdgeOn                0.130             0.070  0.072  0.047          0.149      0.062       0.080     0.086   0.031        0.516  0.061  0.071     0.121     0.179            0.036      0.064      0.042      0.086
+Irregular             0.038             0.135  0.056  0.086          0.072      0.150       0.082     0.056   0.081        0.169  0.158  0.188     0.204     0.068            0.164      0.081      0.034      0.080
+Ambiguous             0.132             0.122  0.111  0.046          0.069      0.076       0.056     0.123   0.101        0.160  0.064  0.061     0.062     0.287            0.070      0.054      0.044      0.067
+16:22:38  [Stage 6c] ok in 18.5 s
+16:22:38  ==============================================================================
+16:22:38  Stage 7a - Taxonomy alignment + ceiling
+16:22:38  ==============================================================================
+/Users/sangeet516a/Documents/pixels2provenance/src/p2p/context.py:179: DtypeWarning: Columns (33: cr_candidate) have mixed types. Specify dtype option on import or set low_memory=False.
+  t = pd.read_csv(ctx.require(key, name))
+16:22:39  [Stage 7a] Phase 7 uses the splits ['train', 'dev', 'test', 'buffer', 'external'] (12,556 galaxies)
+[catalogs] candels: 5276 duplicate rows (same galaxy, other depth) removed
+16:22:39  [Stage 7a] alignment matrix (overlap set):
+CANDELS expert  Disk  Irregular  Spheroid  Unclassifiable
+GZH (mapped)                                             
+Disk             584         54       106               7
+Irregular        245         66       138               3
+Spheroid         132          3        71               0
+Unclassifiable   103          2       118               1
+16:22:39  [Stage 7a] {'ceiling_macro_f1': 0.2758, 'classes_scored': ['Disk', 'Irregular', 'Spheroid', 'Unclassifiable'], 'cohen_kappa': 0.1348, 'n_overlap': 1633, 'n_phase7_galaxies': 12556, 'phase7_splits': ['train', 'dev', 'test', 'buffer', 'external'], 'by_split': {'buffer': {'n_overlap': 136, 'ceiling_macro_f1': 0.2224}, 'dev': {'n_overlap': 142, 'ceiling_macro_f1': 0.29}, 'external': {'n_overlap': 47, 'ceiling_macro_f1': 0.3438}, 'test': {'n_overlap': 31, 'ceiling_macro_f1': 0.1958}, 'train': {'n_overlap': 1277, 'ceiling_macro_f1': 0.2771}}, 'k15_matched_by_split': {'buffer': 186, 'dev': 189, 'external': 85, 'test': 51, 'train': 1904}, 'n_k15_matched': 2415, 'k15_offset_arcsec': {'P01': (0.141, -0.258), 'P02': (0.069, -0.309), 'P03': (-0.561, 1.35), 'P04': (0.091, 2.501), 'P05': (0.062, -0.344), 'P06': (0.06, -0.163), 'P07': (0.086, -0.308), 'P08': (0.039, -0.306), 'P09': (0.039, -0.306), 'P10': (0.039, -0.306), 'P11': (0.039, -0.306), 'P12': (0.039, -0.306), 'P13': (0.039, -0.306), 'P14': (0.039, -0.306)}}
+16:22:39  [Stage 7a] ok in 0.9 s
+16:22:39  ==============================================================================
+16:22:39  Stage 7b - Cross-catalogue + external evaluation
+16:22:39  ==============================================================================
+/Users/sangeet516a/Documents/pixels2provenance/src/p2p/context.py:179: DtypeWarning: Columns (33: cr_candidate) have mixed types. Specify dtype option on import or set low_memory=False.
+  t = pd.read_csv(ctx.require(key, name))
+16:22:44  [Stage 7b] external GZH galaxies n=434: accuracy 0.576 | Macro-F1 0.5624 (95% CI 0.515-0.606) | balanced acc 0.5651 | ECE 0.0736
+[Stage 7b] shape given to 372 of 434 galaxies (85.7%); on those: accuracy 0.621, 4-class Macro-F1 0.6555; where the GZH label is a shape too (n = 339): accuracy 0.6814, Macro-F1 0.6877
+[Stage 7b] per pointing: {'P07': {'n': 44, 'accuracy': 0.3864, 'macro_f1': 0.3298, 'shape': {'n': 44, 'n_shape': 37, 'coverage': 0.8409, 'accuracy': 0.4324, 'macro_f1': 0.3971, 'both_n': 34, 'both_accuracy': 0.4706, 'both_macro_f1': 0.414}}, 'P08': {'n': 276, 'accuracy': 0.6123, 'macro_f1': 0.6013, 'shape': {'n': 276, 'n_shape': 240, 'coverage': 0.8696, 'accuracy': 0.6458, 'macro_f1': 0.6847, 'both_n': 217, 'both_accuracy': 0.7143, 'both_macro_f1': 0.7227}}, 'P12': {'n': 40, 'accuracy': 0.525, 'macro_f1': 0.453, 'shape': {'n': 40, 'n_shape': 36, 'coverage': 0.9, 'accuracy': 0.5833, 'macro_f1': 0.5966, 'both_n': 35, 'both_accuracy': 0.6, 'both_macro_f1': 0.6032}}, 'P13': {'n': 68, 'accuracy': 0.6176, 'macro_f1': 0.6103, 'shape': {'n': 68, 'n_shape': 55, 'coverage': 0.8088, 'accuracy': 0.6909, 'macro_f1': 0.7286, 'both_n': 51, 'both_accuracy': 0.7451, 'both_macro_f1': 0.7479}}, 'P14': {'n': 6, 'accuracy': 0.1667, 'macro_f1': 0.1, 'shape': {'n': 6, 'n_shape': 4, 'coverage': 0.6667, 'accuracy': 0.25, 'macro_f1': 0.1667, 'both_n': 2, 'both_accuracy': 0.5, 'both_macro_f1': 0.1667}}}
+/Users/sangeet516a/Documents/pixels2provenance/src/p2p/context.py:179: DtypeWarning: Columns (33: cr_candidate) have mixed types. Specify dtype option on import or set low_memory=False.
+  t = pd.read_csv(ctx.require(key, name))
+16:22:48  [Stage 7b] cross-catalogue Macro-F1 = 0.2272 on n = 729 | per split {'buffer': {'n': 46, 'xcat_macro_f1': 0.1698}, 'dev': {'n': 42, 'xcat_macro_f1': 0.167}, 'external': {'n': 34, 'xcat_macro_f1': 0.2709}, 'test': {'n': 20, 'xcat_macro_f1': 0.242}, 'train': {'n': 587, 'xcat_macro_f1': 0.2296}}
+model           Disk  Irregular  Spheroid  Unclassifiable
+CANDELS                                                  
+Disk             107        159        12              31
+Irregular         17         71         0               8
+Spheroid          15        191        26              86
+Unclassifiable     4          1         0               1
+16:22:48  [Stage 7b] ok in 9.1 s
+16:22:48  ==============================================================================
+16:22:48  Stage 7c - Generalisation disentanglement
+16:22:48  ==============================================================================
+/Users/sangeet516a/Documents/pixels2provenance/src/p2p/context.py:179: DtypeWarning: Columns (33: cr_candidate) have mixed types. Specify dtype option on import or set low_memory=False.
+  t = pd.read_csv(ctx.require(key, name))
+/Users/sangeet516a/Documents/pixels2provenance/src/p2p/context.py:179: DtypeWarning: Columns (33: cr_candidate) have mixed types. Specify dtype option on import or set low_memory=False.
+  t = pd.read_csv(ctx.require(key, name))
+16:22:49  [Stage 7c] {'indomain_macro_f1_coarse': 0.5619, 'taxonomy_ceiling_macro_f1': 0.2758, 'cross_catalogue_macro_f1': 0.2272, 'true_degradation': 0.0486, 'naive_drop': 0.3347, 'label_scheme_component': 0.2861, 'xcat_macro_f1_by_snr_tertile': {'low SNR': 0.1868, 'mid SNR': 0.233, 'high SNR': 0.2422}, 'covariate_shift': {'snr': {'gzh_train_median': 27.746, 'external_median': 14.486}, 'mag': {'gzh_train_median': 23.877, 'external_median': 25.136}, 'r_half': {'gzh_train_median': 6.283, 'external_median': 4.088}, 'gini': {'gzh_train_median': 0.522, 'external_median': 0.515}, 'asymmetry': {'gzh_train_median': 0.04, 'external_median': 0.03}, 'concentration': {'gzh_train_median': 2.775, 'external_median': 2.649}}, 'xcat_macro_f1_by_split': {'buffer': {'n': 46, 'xcat_macro_f1': 0.1698}, 'dev': {'n': 42, 'xcat_macro_f1': 0.167}, 'external': {'n': 34, 'xcat_macro_f1': 0.2709}, 'test': {'n': 20, 'xcat_macro_f1': 0.242}, 'train': {'n': 587, 'xcat_macro_f1': 0.2296}}, 'ceiling_by_split': {'buffer': {'n_overlap': 136, 'ceiling_macro_f1': 0.2224}, 'dev': {'n_overlap': 142, 'ceiling_macro_f1': 0.29}, 'external': {'n_overlap': 47, 'ceiling_macro_f1': 0.3438}, 'test': {'n_overlap': 31, 'ceiling_macro_f1': 0.1958}, 'train': {'n_overlap': 1277, 'ceiling_macro_f1': 0.2771}}, 'phase7_splits': ['train', 'dev', 'test', 'buffer', 'external']}
+16:22:49  [Stage 7c] ok in 0.7 s
+16:22:49  ==============================================================================
+16:22:49  Stage 8 - Unified catalogue (catalog.csv)
+16:22:49  ==============================================================================
+/Users/sangeet516a/Documents/pixels2provenance/src/p2p/context.py:179: DtypeWarning: Columns (33: cr_candidate) have mixed types. Specify dtype option on import or set low_memory=False.
+  t = pd.read_csv(ctx.require(key, name))
+16:22:53  [Stage 8] 3185 train + dev galaxies carry their out-of-fold prediction
+[catalogs] candels: 5276 duplicate rows (same galaxy, other depth) removed
+16:22:54  [Stage 8] CANDELS: 2415 of 12453 galaxies matched (offset removed per pointing: P01 (+0.14", -0.26"), P02 (+0.07", -0.31"), P03 (-0.56", +1.35"), P04 (+0.09", +2.50"), P05 (+0.06", -0.34"), P06 (+0.06", -0.16"), P07 (+0.09", -0.31"), P08 (+0.04", -0.31"), P09 (+0.04", -0.31"), P10 (+0.04", -0.31"), P11 (+0.04", -0.31"), P12 (+0.04", -0.31"), P13 (+0.04", -0.31"), P14 (+0.04", -0.31"))
+16:22:55  [Stage 8] catalog.csv: 42827 rows x 95 columns (188 duplicates merged) | {'Noise': 29331, 'Galaxy': 13242, 'Star': 254} | galaxy labels from GZH (False) / model (True): {'True': 8199, 'False': 4254}
+16:22:55  [Stage 8] delivery checks: {'every_galaxy_has_calibrated_probs': True, 'every_galaxy_has_merger_prob': True, 'every_galaxy_has_heritage_flag': True, 'every_measured_galaxy_at_pass_2': True, 'class_columns_empty_for_other_classifications': True, 'designations_unique': True, 'column_order_as_specified': True}
+16:22:55  [Stage 8] ok in 6.0 s
+16:22:55  ==============================================================================
+16:22:55  Stage 9 - Galaxy image atlas (PNG + zip)
+16:22:55  ==============================================================================
+16:29:14  [Stage 9] 12453 galaxy images (154.41 MB PNG, zip 158.03 MB) | per class {'Smooth': 844, 'FaceOnSpiral': 1970, 'EdgeOn': 2426, 'Irregular': 5048, 'Ambiguous': 2165, 'Unclassified': 0} | RGB = ['F775W', 'F606W', 'F435W'] | look like cosmic rays: 518 (galaxy_images_index.csv: cr_suspect)
+16:29:14  [Stage 9] ok in 379.2 s
+16:29:14  Done. Outputs in outputs (final catalogue: stage8_catalogue/catalog.csv)

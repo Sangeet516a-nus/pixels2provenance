@@ -8,7 +8,7 @@
 Per filter, the file must CONTAIN the position; combined products (several exposures, cosmic rays rejected)
 are preferred over single exposures, then the longest exposure. The other bands prefer files that overlap the
 red (detection) band's file, so all bands form one pointing. See src/p2p/archive.py.
-To search, download AND run the pipeline in one go, use tools/run_field.py or the app (streamlit run app.py).
+To search, download AND run the pipeline in one go, use tools/run_field.py.
 """
 from __future__ import annotations
 

@@ -49,6 +49,9 @@ def main():
         return
 
     keys = [k for k, *_ in STAGES]
+    for name, v in (("--from", args.start), ("--to", args.stop), ("--only", args.only)):
+        if v is not None and v not in keys:
+            sys.exit(f"Unknown stage {v!r} for {name}. Stages: {', '.join(keys)} (python run_pipeline.py --list)")
     if args.list:
         for k, mod, folder, title in STAGES:
             print(f"  {k:>3}  {title:45s} -> outputs/{folder}/   (src/p2p/stages/{mod}.py)")

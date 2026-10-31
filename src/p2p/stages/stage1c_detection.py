@@ -204,6 +204,8 @@ def process_pointing(ctx, pid, p, bands, rules, qc_boxes, pidx):
     for b, im in imgs.items():                       # cosmic-ray-free copies for the centroid test
         im["med"], im["med_noise"] = median_image(im["sub"], im["val"], 3)
     phot = {b: segment_photometry(lab_img, det["wcs"], imgs.get(b), det["pixarea"], max_lab, corr) for b in bands}
+    for im in imgs.values():                         # full-frame copies no longer needed (memory)
+        im.pop("med", None)
     dcx, dcy = phot[det_b][3][li], phot[det_b][4][li]
     for b in bands:
         fl, er, cov, cx, cy = phot[b]
@@ -302,6 +304,9 @@ def process_pointing(ctx, pid, p, bands, rules, qc_boxes, pidx):
             row[f"magerr_{b}"] = 1.0857 * e / fl if ok and np.isfinite(e) else np.nan
         rows.append(row)
     tab = pd.concat([tab, pd.DataFrame(rows)], axis=1)
+    if int(tab["label"].max()) >= 100000:            # object_id = pointing x 100000 + label must stay unique
+        raise RuntimeError(f"[Stage 1c] {pid}: segment label {int(tab['label'].max())} >= 100000 - object ids would "
+                           "collide with the next pointing. Raise detection.nsigma / npixels (far too many detections).")
     tab["object_id"] = (pidx + 1) * 100000 + tab["label"]
     tab["pointing"] = pid
     tab["role"] = p["role"]

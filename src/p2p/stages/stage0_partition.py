@@ -21,23 +21,30 @@ Method  : 1. Each pointing (three files F435W / F606W / F775W, grouped as in Sta
              every region, or inside / within the collar (partition.collar_arcmin) of regions with DIFFERENT
              splits - the leakage guard. Overlapping regions of the SAME split keep the source.
 
-Plan (Sangeeta, 28 Oct). Each split mixes GOODS-South and GOODS-North pointings from different HST
-programmes, epochs and depths, so train, dev and test see the same variety of data. GZH catalogue entries
-(positions only) per split, from the real footprints of the 24 files:
+Plan (Sangeeta, 30 Oct evening; was 28 Oct). Each split mixes GOODS-South and GOODS-North pointings from different
+HST programmes, epochs and depths, so train, dev, test and external see the same variety of data. Target GZH catalogue
+entries (positions only) per split; an entry's 'targets' moves its stripe cuts until the counts hold after the
+collars. These count catalogue entries: detection, labels and edge cuts later leave fewer galaxies in each split:
 
-    Pointing    train   dev   test   external   no split
-    GOODS-S        61   121      -         68         49   stripes 25 / 50 / 25 %
-    GOODS-S-2       -    30    129          -         14   stripes 80 (test) / 20 (dev) %
-    GOODS-S-3     342     -      -          -         12
-    GOODS-S-4       -     -      -        319         34   Phase 7 (Kartaltepe human labels)
-    GOODS-N-1     383     -      -          -         12
-    GOODS-N-2       -     -      -        320         29   held-out field
-    GOODS-N-3     198   168      -          -         58   stripes 50 / 50 %
-    GOODS-N-4       -     -    294          -         11
-    Total         984   319    423        707        219   (no split = collar or regions of different splits)
+    Pointing    train   dev   test   external   stripes
+    GOODS-S        61   121      -         68   25 / 50 / 25 %
+    GOODS-S-2       -    30    129          -   80 (test) / 20 (dev) %
+    GOODS-S-3     342     -      -          -   whole pointing
+    GOODS-S-4     219     -      -        100   69 / 31 %
+    GOODS-N-1     383     -      -          -   whole pointing
+    GOODS-N-2     220     -     50         50   69 / 15.5 / 15.5 %
+    GOODS-N-3     198   168      -          -   50 / 50 %
+    GOODS-N-4       -     -    194        100   66 / 34 %
+    Total       1,423   319    373        318
 
-Cross-validation (Stages 4a-4d) trains on train + dev. Test and external stay sealed until the model is final
-(evaluation.test_sealed). Every run writes this table to split_rule.json ("gzh_per_pointing") and the log.
+Added 31 Oct (data/fields, deep images): train GOODS-N-6, GOODS-N-9, GOODS-S-5, GOODS-S-8, GOODS-S-9; external GOODS-N-7 (never
+scored: clean GOODS-North data, as the GOODS-N-4 external stripe was scored as test on 30 Oct). GOODS-N-6 and GOODS-N-9 overlap
+test / external stripes and have 'yields: true', so adding them does not shrink the held-out data.
+31 Oct, later: all of GOODS-S-4 moved to train (its row above no longer applies), so external is GOODS-N-7 and stripes of
+GOODS-S, GOODS-N-2 and GOODS-N-4.
+
+Cross-validation (Stages 4a-4d) trains on train + dev. Every split goes through every phase (Phase 7 included);
+only the external galaxies are sealed until the model is final (evaluation.seal_external). Every run writes this table to split_rule.json ("gzh_per_pointing") and the log.
 
 Output  : outputs/stage0_partition/split_rule.json, split_regions.png
 """
@@ -59,35 +66,49 @@ class SkyRegionPartitioner:
         self.buffer_deg = collar_arcmin / 60.0
         self.regions: dict[str, dict] = {}
 
-    def define_region(self, name, polygon, split, pointing):
+    def define_region(self, name, polygon, split, pointing, yields=False):
         poly = np.asarray(polygon, float)
-        self.regions[name] = {"split_tag": split, "pointing": pointing,
+        self.regions[name] = {"split_tag": split, "pointing": pointing, "yields": bool(yields),
                               "ra_range": [float(poly[:, 0].min()), float(poly[:, 0].max())],
                               "dec_range": [float(poly[:, 1].min()), float(poly[:, 1].max())],
                               "polygon": poly.tolist()}
 
     def assign_many(self, ra, dec):
         """Split of every position: the region's tag if all regions it lies in, or is within the collar of,
-        share one tag; otherwise (or outside every region) None."""
+        share one tag; otherwise (or outside every region) None. A region with 'yields' (an added pointing) never
+        takes anything from the others: inside another region the position follows that region alone, and the
+        yielding region keeps a position only if it is more than 2 collars from every region of another tag (the
+        same separation two ordinary regions have)."""
         from matplotlib.path import Path as MPath
         ra, dec = np.atleast_1d(np.asarray(ra, float)), np.atleast_1d(np.asarray(dec, float))
-        inside = [set() for _ in ra]
-        near = [set() for _ in ra]
+        inside, near, wide, own = ([set() for _ in ra] for _ in range(4))
         buf = self.buffer_deg * 60.0                                       # arcmin
         for reg in self.regions.values():
             poly = np.asarray(reg.get("polygon") or _box_polygon(reg), float)
             P, X = _tangent_arcmin(poly, ra, dec)
-            idx = np.where(np.hypot(*X.T) < np.hypot(*P.T).max() + buf + 1e-9)[0]   # cheap pre-selection
+            idx = np.where(np.hypot(*X.T) < np.hypot(*P.T).max() + 2 * buf + 1e-9)[0]   # cheap pre-selection
             if not len(idx):
                 continue
             ins = MPath(P).contains_points(X[idx])
-            close = ins | (_dist_to_edges(X[idx], P) < buf)
-            for i, a, b in zip(idx, ins, close):
+            dist = _dist_to_edges(X[idx], P)
+            for i, a, d in zip(idx, ins, dist):
+                if reg.get("yields"):
+                    if a:
+                        own[i].add(reg["split_tag"])
+                    continue
                 if a:
                     inside[i].add(reg["split_tag"])
-                if b:
+                if a or d < buf:
                     near[i].add(reg["split_tag"])
-        return [next(iter(n)) if i and len(n) == 1 else None for i, n in zip(inside, near)]
+                if a or d < 2 * buf:
+                    wide[i].add(reg["split_tag"])
+        out = []
+        for i, n, w, y in zip(inside, near, wide, own):
+            if i:
+                out.append(next(iter(n)) if len(n) == 1 else None)
+            else:
+                out.append(next(iter(y)) if y and len(y | w) == 1 else None)
+        return out
 
     def assign_split(self, ra, dec):
         return self.assign_many([ra], [dec])[0]
@@ -221,28 +242,63 @@ def pointing_rules(metas, groups, cfg):
 
 def build_partition(metas, groups, cfg, gzh_radec=None, log=print):
     from matplotlib.path import Path as MPath
-    part = SkyRegionPartitioner(cfg["collar_arcmin"])
     by_gzh = cfg.get("stripe_share", "gzh_galaxies") == "gzh_galaxies" and gzh_radec is not None
+    plans = []
     for gi, (g, rule) in enumerate(zip(groups, pointing_rules(metas, groups, cfg))):
         pid = f"P{gi + 1:02d}"
         name = f"{pid}_{rule['name']}".replace(" ", "_") if rule["name"] != pid else pid
         ra, dec = coverage_points([metas[i] for i in g], log=log)
-        poly = footprint_polygon(ra, dec)
-        if "split" in rule:
-            part.define_region(name, poly, rule["split"], name)
-            continue
-        w, share = (None, None), "data area"
-        if by_gzh:
-            ins = MPath(poly).contains_points(np.column_stack(gzh_radec))
-            if ins.sum() >= 20:                  # too few labelled galaxies: equal data area instead
-                w, share = (gzh_radec[0][ins], gzh_radec[1][ins]), f"GZH galaxies ({int(ins.sum())} in the pointing)"
-        log(f"[Stage 0] {name}: stripes {rule['stripes']} by share of {share}")
-        for tag, box in stripe_boxes(ra, dec, rule["stripes"], *w):
-            sp = clip_to_box(poly, box)
-            if len(sp) >= 3:
-                part.define_region(f"{name}_{tag}", sp, tag, name)
+        p = {"name": name, "ra": ra, "dec": dec, "poly": footprint_polygon(ra, dec), "rule": rule, "w": (None, None)}
+        if "split" not in rule:
+            p["shares"], share = dict(rule.get("targets") or rule["stripes"]), "data area"
+            if by_gzh:
+                ins = MPath(p["poly"]).contains_points(np.column_stack(gzh_radec))
+                if ins.sum() >= 20:              # too few labelled galaxies: equal data area instead
+                    p["w"], share = (gzh_radec[0][ins], gzh_radec[1][ins]), f"GZH galaxies ({int(ins.sum())} in the pointing)"
+            log(f"[Stage 0] {name}: stripes {rule.get('targets') or rule['stripes']} by share of {share}")
+        plans.append(p)
+    part = _regions(plans, cfg)
+    if by_gzh and any(p["rule"].get("targets") for p in plans):
+        part = _fit_stripes_to_targets(plans, cfg, gzh_radec, log)
     mode = "planned (partition.pointing_splits)" if cfg.get("pointing_splits") else "automatic (fractions)"
     return part, mode
+
+
+def _regions(plans, cfg):
+    """The regions of every pointing with the current stripe shares."""
+    part = SkyRegionPartitioner(cfg["collar_arcmin"])
+    for p in plans:
+        if "split" in p["rule"]:
+            part.define_region(p["name"], p["poly"], p["rule"]["split"], p["name"], p["rule"].get("yields", False))
+            continue
+        for tag, box in stripe_boxes(p["ra"], p["dec"], p["shares"], *p["w"]):
+            sp = clip_to_box(p["poly"], box)
+            if len(sp) >= 3:
+                part.define_region(f"{p['name']}_{tag}", sp, tag, p["name"])
+    return part
+
+
+def _fit_stripes_to_targets(plans, cfg, gzh_radec, log):
+    """Move the stripe cuts until each stripe holds its target number of GZH galaxies AFTER collars and overlaps with
+    other splits have removed theirs (partition.pointing_splits 'targets'; shares alone come out short, most of all in
+    narrow middle stripes). Positions only, never classes. Keeps the iteration closest to the targets."""
+    fitted = [p for p in plans if p["rule"].get("targets")]
+    best, best_err = None, np.inf
+    for _ in range(int(cfg.get("stripe_fit_iterations", 40))):
+        part = _regions(plans, cfg)
+        table = _gzh_per_pointing(part, gzh_radec)
+        err = 0
+        for p in fitted:
+            for tag, want in p["rule"]["targets"].items():
+                have = int(table.at[p["name"], tag]) if p["name"] in table.index and tag in table else 0
+                err += abs(have - want)
+                p["shares"][tag] = p["shares"][tag] * (want / max(have, 1)) ** 0.7
+        if err < best_err:
+            best, best_err = part, err
+        if err == 0:
+            break
+    log(f"[Stage 0] stripes fitted to the target counts: total difference {best_err} GZH galaxies")
+    return best
 
 
 # ---------------------------------------------------------------- stage entry
@@ -285,7 +341,7 @@ def _gzh_per_pointing(part, gzh_radec):
     ra, dec = gzh_radec
     split = pd.Series(part.assign_many(ra, dec), dtype=object).fillna("no split").to_numpy()
     where = np.full(len(ra), None, dtype=object)
-    for reg in part.regions.values():
+    for reg in sorted(part.regions.values(), key=lambda r: bool(r.get("yields"))):   # an overlap counts for the planned pointing
         P, X = _tangent_arcmin(np.asarray(reg["polygon"]), ra, dec)
         where[(where == None) & MPath(P).contains_points(X)] = reg["pointing"]    # noqa: E711
     keep = where != None                                                      # noqa: E711

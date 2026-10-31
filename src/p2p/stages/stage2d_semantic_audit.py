@@ -40,7 +40,7 @@ import pandas as pd
 from ..catalogs import load_gzh
 from ..context import Ctx, load_json, load_objects, save_json
 from ..features import load_cutouts
-from ..utils import as_bool, asinh_normalise, match_with_offset, noise_evidence
+from ..utils import as_bool, asinh_normalise, fmt_offsets, match_with_offset, noise_evidence
 
 NAMES = ("Star", "Galaxy", "Noise")
 
@@ -63,9 +63,10 @@ def run(ctx: Ctx):
     gzh = load_gzh(ctx, metas, required=False)
     if gzh is not None and len(gzh):
         _, _, hit, off = match_with_offset(df.ra, df.dec, gzh.ra, gzh.dec, cfg["gzh_radius_arcsec"],
-                                           estimate=ctx.cfg["catalogs"]["gzh"].get("estimate_offset", True))
-        ctx.log.info(f"[Stage 2d] GZH positions: {int(hit.sum())} matches (offset removed: "
-                     f"dRA {off[0]:+.3f}\", dDec {off[1]:+.3f}\")")
+                                           estimate=ctx.cfg["catalogs"]["gzh"].get("estimate_offset", True),
+                                           groups=df.pointing.to_numpy())
+        ctx.log.info(f"[Stage 2d] GZH positions: {int(hit.sum())} matches (offset per pointing removed: "
+                     f"{fmt_offsets(off)})")
     else:
         hit = np.zeros(len(df), bool)
         ctx.log.info("[Stage 2d] no GZH table - galaxy evidence falls back to the baseline rule")

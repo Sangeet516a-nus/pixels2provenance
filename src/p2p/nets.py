@@ -258,16 +258,16 @@ class ResidualBlock(nn.Module):
 
 class ResNet18(nn.Module):
     """ResNet-18 feature extractor (Stage 4a), 11.2 M parameters, written like a Keras model:
-        inputs (N, in_ch, 128, 128)
-        x = Conv2D(64, 7, strides=2) + BatchNormalization + relu      -> (N, 64, 64, 64)
-        x = MaxPooling2D(3, strides=2)                                -> (N, 64, 32, 32)
-        x = residual_block(x, 64);       x = residual_block(x, 64)    -> (N, 64, 32, 32)
-        x = residual_block(x, 128, 2);   x = residual_block(x, 128)   -> (N, 128, 16, 16)
-        x = residual_block(x, 256, 2);   x = residual_block(x, 256)   -> (N, 256, 8, 8)
-        x = residual_block(x, 512, 2);   x = residual_block(x, 512)   -> (N, 512, 4, 4)
+        inputs (N, 3, 224, 224)                                       (supervised.input_size; PyTorch fixes only
+        x = Conv2D(64, 7, strides=2) + BatchNormalization + relu      -> (N, 64, 112, 112)   the channel counts,
+        x = MaxPooling2D(3, strides=2)                                -> (N, 64, 56, 56)     any image size works)
+        x = residual_block(x, 64);       x = residual_block(x, 64)    -> (N, 64, 56, 56)
+        x = residual_block(x, 128, 2);   x = residual_block(x, 128)   -> (N, 128, 28, 28)
+        x = residual_block(x, 256, 2);   x = residual_block(x, 256)   -> (N, 256, 14, 14)
+        x = residual_block(x, 512, 2);   x = residual_block(x, 512)   -> (N, 512, 7, 7)
         x = GlobalAveragePooling2D()(x)                               -> (N, 512)
-    (shapes for a 128 x 128 input; at 224 x 224 the last map is 7 x 7.) No classifier: the 512 pooled values are
-    the features. pretrained=True loads torchvision's ImageNet weights (same layer names)."""
+    No classifier: the 512 pooled values are the features. pretrained=True loads torchvision's ImageNet weights
+    (same layer names); the 3 input channels are R, G, B = reddest, middle, bluest band."""
 
     def __init__(self, in_ch=3, pretrained=False):
         super().__init__()
@@ -284,8 +284,12 @@ class ResNet18(nn.Module):
         if pretrained:
             w = torchvision.models.resnet18(weights=torchvision.models.ResNet18_Weights.IMAGENET1K_V1).state_dict()
             self.load_state_dict({k: v for k, v in w.items() if not k.startswith("fc.")})
-        if in_ch != 3:                                       # 6-channel input: a new first convolution
+        if in_ch != 3:          # another band count: a new first convolution, started from the ImageNet filters
+            old = self.conv1.weight.data                     # (64, 3, 7, 7)
             self.conv1 = nn.Conv2d(in_ch, 64, 7, stride=2, padding=3, bias=False)
+            with torch.no_grad():                            # every channel gets the mean RGB filter, scaled so the
+                self.conv1.weight.copy_(old.mean(1, keepdim=True).repeat(1, in_ch, 1, 1) * 3.0 / in_ch)  # response
+                                                             # to a grey image is unchanged
         self.out_dim = 512
 
     def forward(self, x):
@@ -326,7 +330,8 @@ def frozen(model):
 
 @torch.no_grad()
 def model_summary(model, *inputs, name=None, max_depth=2):
-    """Keras-style model.summary(): one row per layer (down to `max_depth` levels of nesting) with its
+    """Keras-style model.summary(): one row per layer (down to `max_depth` levels of nesting; None = every leaf
+    layer, as Keras lists them) with its
     output shape and weight count, from one forward pass of `inputs` (dummy tensors are fine)."""
     def shape(o):
         if torch.is_tensor(o):
@@ -340,7 +345,10 @@ def model_summary(model, *inputs, name=None, max_depth=2):
     rows, hooks = [], []
     for path, mod in model.named_modules():
         depth = path.count(".") + 1 if path else 0
-        if depth == 0 or depth > max_depth or (depth < max_depth and len(list(mod.children()))):
+        if max_depth is None:                       # full depth: every leaf layer (each Conv2d, BN, ReLU, ...)
+            if depth == 0 or len(list(mod.children())):
+                continue
+        elif depth == 0 or depth > max_depth or (depth < max_depth and len(list(mod.children()))):
             continue
         n = sum(p.numel() for p in mod.parameters())
         hooks.append(mod.register_forward_hook(

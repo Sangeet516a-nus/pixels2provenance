@@ -46,7 +46,7 @@ STAGES = [
     ("6b", "stage6b_uncertainty",     "stage6b_uncertainty",     "Uncertainty audit"),
     ("6c", "stage6c_xai",             "stage6c_xai",             "Explainable AI (SHAP)"),
     ("7a", "stage7a_taxonomy",        "stage7a_taxonomy",        "Taxonomy alignment + ceiling"),
-    ("7b", "stage7b_crosscat",        "stage7b_crosscat",        "Cross-catalogue evaluation"),
+    ("7b", "stage7b_crosscat",        "stage7b_crosscat",        "Cross-catalogue + external evaluation"),
     ("7c", "stage7c_generalisation",  "stage7c_generalisation",  "Generalisation disentanglement"),
     ("8",  "stage8_catalogue",        "stage8_catalogue",        "Unified catalogue (catalog.csv)"),
     ("9",  "stage9_galaxy_atlas",     "stage9_galaxy_atlas",     "Galaxy image atlas (PNG + zip)"),
@@ -191,17 +191,24 @@ def load_objects(ctx: Ctx, parts) -> pd.DataFrame:
 
 
 def _make_logger(path: Path) -> logging.Logger:
+    """One logger for the process: console + outputs/pipeline.log. When a new Ctx points at ANOTHER outputs folder
+    (notebook, tools, a second config), the file handler is moved there instead of logging to the old file."""
     log = logging.getLogger("p2p")
-    if log.handlers:
-        return log
     log.setLevel(logging.INFO)
     fmt = logging.Formatter("%(asctime)s  %(message)s", "%H:%M:%S")
-    sh = logging.StreamHandler(sys.stdout)
-    sh.setFormatter(fmt)
-    fh = logging.FileHandler(path)
-    fh.setFormatter(fmt)
-    log.addHandler(sh)
-    log.addHandler(fh)
+    if not any(isinstance(h, logging.StreamHandler) and not isinstance(h, logging.FileHandler) for h in log.handlers):
+        sh = logging.StreamHandler(sys.stdout)
+        sh.setFormatter(fmt)
+        log.addHandler(sh)
+    target = str(Path(path).resolve())
+    for h in [h for h in log.handlers if isinstance(h, logging.FileHandler)]:
+        if h.baseFilename != target:
+            log.removeHandler(h)
+            h.close()
+    if not any(isinstance(h, logging.FileHandler) for h in log.handlers):
+        fh = logging.FileHandler(path)
+        fh.setFormatter(fmt)
+        log.addHandler(fh)
     return log
 
 

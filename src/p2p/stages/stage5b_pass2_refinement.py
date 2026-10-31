@@ -21,6 +21,7 @@ import pandas as pd
 
 from ..context import Ctx, load_objects, save_json
 from ..morphology import FEATURES, run_parallel
+from ..utils import galaxy_track
 
 FROZEN = ["object_id", "split_tag", "cluster_semantic", "cluster_id_gmm", "is_transitional", "anomaly_flag"]
 
@@ -34,7 +35,7 @@ def run(ctx: Ctx):
     mode = ctx.cfg["morphology"]["pass2_mode"]
     df = load_objects(ctx, ["sources", "pass1", "clusters", "segregation"])
     before = _hash(df)
-    gal = df[(df.cluster_semantic == "Galaxy") & (df.anomaly_flag == 0) & (df.snr >= ctx.cfg["morphology"]["min_snr"])]
+    gal = df[galaxy_track(df) & (df.snr >= ctx.cfg["morphology"]["min_snr"]).to_numpy()]
     psf = {p: np.load(ctx.require("5a", f"epsf_{p}.npy")) for p in gal.pointing.unique()}
     ctx.log.info(f"[Stage 5b] Pass-2 ({mode}) on {len(gal)} galaxies with {ctx.n_jobs} worker(s) ...")
     res = run_parallel(ctx, ctx.require("1d", "cutouts.npy"), ctx.require("1c", "segstamps.npy"),

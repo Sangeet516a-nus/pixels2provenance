@@ -4,8 +4,9 @@ Purpose : report true degradation, not a raw score drop.
 Method  : true degradation = Taxonomy Ceiling - Cross-Catalogue Macro-F1.
           The in-domain test score is recomputed on the same coarse taxonomy so
           all three numbers share one scale. The external sample is also split
-          into SNR tertiles, and the covariate shift (SNR, size, morphology)
-          between the GZH training set and the external test set is listed.
+          into SNR tertiles and reported per split (train, dev, test, buffer; external once unsealed), and the
+          covariate shift (SNR, size, morphology) between the GZH training set and the CANDELS-only galaxies is
+          listed.
 Output  : generalisation_report.json, generalisation_gap.png
 """
 from __future__ import annotations
@@ -17,12 +18,10 @@ from sklearn.metrics import f1_score
 from ..context import Ctx, StageSkipped, load_json, save_json
 from ..features import galaxy_table, supervised_splits
 from ..nets import MORPH_CLASSES
-from .stage7a_taxonomy import COMMON, GZH_TO_COMMON
+from .stage7a_taxonomy import GZH_TO_COMMON
 
 
 def run(ctx: Ctx):
-    from ..sealing import require_unsealed
-    require_unsealed(ctx, "7c")
     out = ctx.stage_dir("7c")
     if not ctx.path("7b", "cross_catalogue_metrics.json").exists():
         raise StageSkipped("Stage 7b has no result.")
@@ -55,13 +54,16 @@ def run(ctx: Ctx):
            "label_scheme_component": round(indomain - ceil, 4) if indomain is not None else None,
            "xcat_macro_f1_by_snr_tertile": by_snr,
            "covariate_shift": shift,
-           "phase7_region": load_json(ctx.require("7a", "taxonomy_ceiling.json")).get("phase7_region", "external")}
-    if rep["phase7_region"] == "all":
+           "xcat_macro_f1_by_split": load_json(ctx.require("7b", "cross_catalogue_metrics.json")).get("by_split", {}),
+           "ceiling_by_split": load_json(ctx.require("7a", "taxonomy_ceiling.json")).get("by_split", {}),
+           "phase7_splits": load_json(ctx.require("7a", "taxonomy_ceiling.json")).get("phase7_splits", [])}
+    if rep["phase7_splits"] == ["all"]:
         rep["note"] = ("apply mode: the frozen model was trained on another field, so every galaxy here is "
                        "out-of-field; the gap mixes the field change (depth, PSF, bands) and the label-scheme change")
-    if rep["phase7_region"] == "test":
-        rep["note"] = ("single field: Phase 7 used the held-out test split, so depth and PSF match training; the gap "
-                       "measures the label-scheme change and the fainter CANDELS-only galaxies, not a new field")
+    elif "external" not in rep["phase7_splits"]:
+        rep["note"] = ("external galaxies sealed: Phase 7 used the train, dev, test and buffer galaxies (CANDELS-only "
+                       "galaxies never had a training label); depth and PSF match training, so the gap measures the "
+                       "label-scheme change and the fainter CANDELS-only galaxies, not a new field")
     save_json(rep, out / "generalisation_report.json")
     import matplotlib
     matplotlib.use("Agg")

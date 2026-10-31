@@ -16,7 +16,6 @@ Output  : star_routing.csv (one row per star with each test), routing_summary.js
 from __future__ import annotations
 
 import numpy as np
-import pandas as pd
 
 from ..context import Ctx, load_json, load_objects, save_json
 from ..utils import as_bool

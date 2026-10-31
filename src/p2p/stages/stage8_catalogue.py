@@ -3,9 +3,11 @@
 Purpose : one deliverable that a scientist can filter with a single column.
 Method  : all tracks (Star, Galaxy, Noise; GZH and external pointings) are merged
           into one row per detected source. Every galaxy gets calibrated class
-          probabilities and a merger probability from the frozen fusion model (Stage 4b XGBoost + 4c calibration).
+          probabilities and a merger probability from the frozen fusion model (Stage 4b XGBoost + 4c calibration);
+          train + dev galaxies get their out-of-fold prediction instead (the final model was fitted on them).
+          While evaluation.seal_external is true, external rows have no GZH / CANDELS label columns.
           Duplicates from overlapping pointings (closer than 0.2") are merged,
-          keeping the higher-SNR detection. Each row gets an IAU-style
+          keeping the GZH-labelled detection, else the higher SNR. Each row gets an IAU-style
           designation (truncated coordinates, a letter appended when two would
           collide). `classification` (C18) is the final Star / Galaxy / Noise class
           after clustering and gating. Columns are written in the fixed order of
@@ -31,10 +33,10 @@ import pandas as pd
 from scipy.spatial import cKDTree
 
 from ..context import Ctx, load_json, load_objects, save_json
-from ..inference import predict_galaxies
+from ..inference import oof_predictions, predict_galaxies
 from ..nets import MORPH_CLASSES
 from ..catalogs import load_candels
-from ..utils import as_bool, fwhm_fit, iau_designation, match_with_offset, predictive_entropy, unit_vectors
+from ..utils import as_bool, fmt_offsets, fwhm_fit, galaxy_track, iau_designation, match_with_offset, predictive_entropy, unit_vectors
 
 # One row per catalogue column: (name, group, filled_for, description).
 # filled_for = the classifications whose rows MAY hold a value; every other row is null (checked before writing).
@@ -130,6 +132,10 @@ EXTRA_COLUMNS = [
     ("cr_pixels_masked", "segregation", ALL, "cosmic-ray pixels replaced and masked inside the source footprint (Stage 1c)"),
     ("gaia_match", "gaia", ALL, "True = a Gaia DR3 source within semantic_audit.gaia_radius_arcsec, whatever the classification"),
     ("classification_override", "segregation", ALL, "why classification differs from the GMM cluster name (Stage 2e physical gate / transitional rule); empty = cluster name kept"),
+    ("fragment_of", "segregation", "Galaxy", "object_id of the brighter galaxy this source is a deblending piece of (inside its half-light radius); such rows get no prediction and no atlas image"),
+    ("morph_confidence", "model", "Galaxy", "highest calibrated class probability (= max of p_smooth ... p_ambiguous); < 0.4 = uncertain prediction"),
+    ("cr_removed_frac", "segregation", "Galaxy", "share of the central light removed as single-band, sharp pixels (Stage 2e cosmic-ray gate / Stage 9 cleaner)"),
+    ("cr_suspect", "segregation", "Galaxy", "True = cr_removed_frac > atlas.cr_suspect_fraction (galaxies above gating.cr_gate_fraction were already moved to Noise)"),
     ("k15_class", "cross_catalogue", "Galaxy (CANDELS-matched)", "CANDELS (Kartaltepe et al. 2015) dominant expert class"),
     ("k15_merger_frac", "cross_catalogue", "Galaxy (CANDELS-matched)", "CANDELS expert merger fraction f(M)"),
     ("k15_sep_arcsec", "cross_catalogue", "Galaxy (CANDELS-matched)", "separation to the CANDELS position after the median offset is removed [arcsec]"),
@@ -173,10 +179,18 @@ def unique_designations(names: pd.Series, ra: pd.Series) -> pd.Series:
     return names
 
 
-def deduplicate(df, radius_arcsec):
-    pairs = cKDTree(unit_vectors(df.ra, df.dec)).query_pairs(2 * np.sin(np.deg2rad(radius_arcsec / 3600) / 2))
+def deduplicate(df, radius_arcsec, offsets=None):
+    """offsets {pointing: {dra, ddec}} (Stage 3a, arcsec): the WCS of overlapping pointings can differ by more than the
+    radius (up to ~2.5"), so positions are compared after removing each pointing's offset."""
+    dra = df.pointing.map(lambda p: (offsets or {}).get(p, {}).get("dra", 0.0)).to_numpy(float)
+    ddec = df.pointing.map(lambda p: (offsets or {}).get(p, {}).get("ddec", 0.0)).to_numpy(float)
+    dec = df.dec.to_numpy(float) - ddec / 3600
+    ra = df.ra.to_numpy(float) - dra / 3600 / np.cos(np.deg2rad(dec))
+    pairs = cKDTree(unit_vectors(ra, dec)).query_pairs(2 * np.sin(np.deg2rad(radius_arcsec / 3600) / 2))
     snr = df.snr.to_numpy()
-    drop = {j if snr[i] >= snr[j] else i for i, j in pairs}
+    labelled = df.gz_label.notna().to_numpy() if "gz_label" in df else np.zeros(len(df), bool)
+    # the detection holding the GZH label is kept, whatever its SNR; otherwise the higher SNR
+    drop = {j if (labelled[i], snr[i]) >= (labelled[j], snr[j]) else i for i, j in pairs}
     return df.drop(index=df.index[list(drop)]), len(drop)
 
 
@@ -189,16 +203,29 @@ def run(ctx: Ctx):
     df["psf_pass"] = df.psf_pass.fillna(1).astype(int)
 
     # ---- calibrated predictions for every galaxy row ----
-    gal = (df.cluster_semantic == "Galaxy") & (df.anomaly_flag == 0)
+    gal = pd.Series(galaxy_track(df), index=df.index)
     gidx = df.index[gal]
     if len(gidx):
         r = predict_galaxies(ctx, df.loc[gidx])          # fusion XGBoost + calibration, all galaxies at once
         P, M = r["morph"], r["merger"]
+        # train + dev galaxies: the out-of-fold prediction. The final model was fitted on them, so its own prediction
+        # repeats their label (accuracy 0.84 vs 0.51 on the test galaxies) and would read as a real classification
+        oof = oof_predictions(ctx)
+        if oof is not None:
+            pos = pd.Series(np.arange(len(oof["object_id"])), index=oof["object_id"])
+            rows = df.loc[gidx, "object_id"].map(pos).to_numpy(float)
+            have = np.isfinite(rows)
+            P[have], M[have] = oof["morph"][rows[have].astype(int)], oof["merger"][rows[have].astype(int)]
+            ctx.log.info(f"[Stage 8] {int(have.sum())} train + dev galaxies carry their out-of-fold prediction")
         for k, c in enumerate(PCOLS):
             df.loc[gal, c] = P[:, k]
         df.loc[gal, "pred_class"] = np.array(MORPH_CLASSES)[P.argmax(1)]
         df.loc[gal, "p_merger"] = M                  # probability only: a 0/1 pred_merger would repeat it
         df.loc[gal, "pred_entropy"] = predictive_entropy(P)
+        df.loc[gal, "morph_confidence"] = P.max(1)   # 31 Oct: top class probability (< 0.4 = uncertain)
+    if "cr_removed_frac" in df:                       # Stage 2e cosmic-ray gate measured it for every galaxy
+        df["cr_suspect"] = np.where(df.cr_removed_frac.notna(), df.cr_removed_frac > float(
+            ctx.cfg.get("atlas", {}).get("cr_suspect_fraction", 0.5)), None)
 
     # ---- identity + provenance ----
     pts = load_json(ctx.require("1a", "pointings.json"))["pointings"]
@@ -243,7 +270,9 @@ def run(ctx: Ctx):
         if c in df:
             df[c] = as_bool(df[c])
     df["is_pseudo_label"] = np.where(df.cluster_semantic == "Galaxy", ~df.gz_label.notna(), None)
-    df, n_dup = deduplicate(df, cfg["dedup_radius_arcsec"])
+    label_summary = ctx.path("3a", "label_summary.json")
+    offsets = load_json(label_summary).get("offset_arcsec_per_pointing") if label_summary.exists() else None
+    df, n_dup = deduplicate(df, cfg["dedup_radius_arcsec"], offsets)
     df["designation"] = unique_designations(iau_designation(df.ra, df.dec, cfg["designation_prefix"]), df.ra)
 
     # exact Gaia DR3 ids (19 digits do not fit a float64; a merge with missing values would turn them into floats)
@@ -259,11 +288,11 @@ def run(ctx: Ctx):
     for c in ("k15_class", "k15_merger_frac", "k15_sep_arcsec"):
         df[c] = None
     k15 = load_candels(ctx, list(load_json(ctx.require("1a", "manifest.json")).values()))
-    galaxy_rows = (df.cluster_semantic == "Galaxy").to_numpy()
+    galaxy_rows = galaxy_track(df)                        # fragments do not take a CANDELS match
     if k15 is not None and len(k15) and galaxy_rows.any():
         from .stage7a_taxonomy import K15
         g = df[galaxy_rows]
-        kidx, ksep, khit, koff = match_with_offset(g.ra, g.dec, k15.ra, k15.dec, 0.5)
+        kidx, ksep, khit, koff = match_with_offset(g.ra, g.dec, k15.ra, k15.dec, 0.5, groups=g.pointing.to_numpy())
         F = k15[list(K15)].to_numpy(float)
         main = np.array(K15)[np.nanargmax(np.nan_to_num(F, nan=-1), axis=1)]
         j = np.clip(kidx, 0, None)
@@ -271,9 +300,14 @@ def run(ctx: Ctx):
         df.loc[galaxy_rows, "k15_merger_frac"] = np.where(khit, k15.merger.to_numpy(float)[j], np.nan)
         df.loc[galaxy_rows, "k15_sep_arcsec"] = np.where(khit, np.round(ksep, 4), np.nan)
         ctx.log.info(f"[Stage 8] CANDELS: {int(khit.sum())} of {int(galaxy_rows.sum())} galaxies matched "
-                     f"(offset removed dRA {koff[0]:+.3f}\", dDec {koff[1]:+.3f}\")")
+                     f"(offset removed per pointing: {fmt_offsets(koff)})")
     else:
         ctx.log.info("[Stage 8] no CANDELS table covering the field - k15_* columns empty")
+    from ..sealing import external_sealed
+    if external_sealed(ctx):                     # the catalogue must not show what the seal hides from every stage
+        ext = df.split_tag == "external"
+        df.loc[ext, ["gz_label", "gz_vote_frac", "gz_merger_flag", "k15_class", "k15_merger_frac", "k15_sep_arcsec"]] = None
+        ctx.log.info(f"[Stage 8] {int(ext.sum())} external rows: GZH and CANDELS label columns left empty while sealed")
     df = df.rename(columns=RENAME)
     for c in MORPH_COLS:                                          # statmorph -99 = could not measure -> empty
         if c in df:
@@ -307,7 +341,7 @@ def run(ctx: Ctx):
                     for n, _, f, _ in cols if allowed(f) is not None)
 
     # ---- delivery checks (Objective 5) ----
-    g = cat[(cat.classification == "Galaxy") & (cat.anomaly_flag == 0)]
+    g = cat[galaxy_track(cat)]
     psum = g[PCOLS].astype(float).sum(axis=1)
     checks = {"every_galaxy_has_calibrated_probs": bool(np.allclose(psum, 1.0, atol=1e-4)),
               "every_galaxy_has_merger_prob": bool(g.p_merger.notna().all()),

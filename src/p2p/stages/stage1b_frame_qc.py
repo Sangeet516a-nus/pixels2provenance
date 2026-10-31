@@ -211,6 +211,9 @@ def run(ctx: Ctx):
                 continue
             pos.append((x0, y0, cov))
             batch.append(qc_normalise(sci[y0:y0 + size, x0:x0 + size], sig))
+        if not batch:
+            ctx.log.info(f"[Stage 1b] WARNING: {Path(f).name} has no tile with data - not scored")
+            continue
         Xs = np.stack(batch)[:, None]
         err = source_masked_mse(Xs, reconstruct(model, Xs, device), size)
         for (x0, y0, cov), e in zip(pos, err):

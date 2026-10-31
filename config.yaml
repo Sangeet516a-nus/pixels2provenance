@@ -17,33 +17,38 @@ paths:
 
 # ---------------------------------------------------------------- Stage 0
 partition:
-  mode: auto                 # auto = derive regions from the FITS footprints | manual
-  collar_arcmin: 0.1         # buffer ring around every region (proposal: 2' for large mosaics;
-                             # a single ACS pointing is only ~3.4' wide: 0.1' = 6" keeps stripes usable)
+  collar_arcmin: 0.06        # buffer ring around every region (proposal: 2' for large mosaics; a single ACS pointing
+                             # is only ~3.4' wide). 31 Oct: was 0.1'. 0.06' = 3.6" on each side keeps two splits at
+                             # least 7.2" apart, more than one 128-px cutout (6.4"), so they share no pixels
   fractions: {train: 0.70, dev: 0.15, test: 0.15}
-  min_pointings_for_whole_assignment: 3   # fewer pointings -> split each pointing into stripes
-  external_patterns: ["j8e611", "j8e688", "j8dna3", "j8dnb8"]
+  external_patterns: [j8dna6, j8dnc1, j8dnf2]   # 31 Oct: GOODS-N-7, the one wholly external pointing
                              # file-name / TARGNAME substrings of the WHOLLY external pointings (never trained on;
                              # Stage 1a role). Must list exactly the pointings with split: external below (a pointing
                              # with an external STRIPE, like GOODS-S, is not listed here).
-  pointing_splits:           # Sangeeta's plan (28 Oct, 16:44). Empty list [] = automatic 70/15/15 assignment.
+  pointing_splits:           # Sangeeta's plan (30 Oct evening; was 28 Oct 16:44). Empty list [] = automatic 70/15/15 assignment.
     # match = file-name substrings of the pointing's three files; split = whole pointing, or stripes (in the order
     # given, along the pointing's longer axis; a collar separates neighbouring stripes) holding the given share of
     # the pointing's GZH galaxies (stripe_share below)
-    - {name: GOODS-S,   match: [jb5x],           stripes: {train: 0.25, dev: 0.50, external: 0.25}}
-    - {name: GOODS-S-2, match: [j8mt],           stripes: {test: 0.80, dev: 0.20}}
+    # targets = GZH galaxies per stripe (31 Oct): the cuts move until the counts hold after collars and overlaps
+    - {name: GOODS-S,   match: [jb5x],           stripes: {train: 0.25, dev: 0.50, external: 0.25}, targets: {train: 61, dev: 121, external: 68}}
+    - {name: GOODS-S-2, match: [j8mt],           stripes: {test: 0.80, dev: 0.20}, targets: {test: 129, dev: 30}}
     - {name: GOODS-S-3, match: [j8e606, j8e621], split: train}
-    - {name: GOODS-S-4, match: [j8e611, j8e688], split: external}   # Phase 7 (Kartaltepe human labels)
+    - {name: GOODS-S-4, match: [j8e611, j8e688], split: train}   # 31 Oct: whole pointing moved to train (Sangeeta)
     - {name: GOODS-N-1, match: [j8dna1, j8dnh8], split: train}
-    - {name: GOODS-N-2, match: [j8dna3, j8dnb8], split: external}   # held-out field (GZH labels, no Kartaltepe)
-    - {name: GOODS-N-3, match: [j8dna0, j8dnb5], stripes: {train: 0.50, dev: 0.50}}
-    - {name: GOODS-N-4, match: [j8dna4, j8dnb9], split: test}
+    - {name: GOODS-N-2, match: [j8dna3, j8dnb8], stripes: {train: 0.69, test: 0.155, external: 0.155}, targets: {train: 220, test: 50, external: 50}}
+    - {name: GOODS-N-3, match: [j8dna0, j8dnb5], stripes: {train: 0.50, dev: 0.50}, targets: {train: 198, dev: 168}}
+    - {name: GOODS-N-4, match: [j8dna4, j8dnb9], stripes: {test: 0.66, external: 0.34}, targets: {test: 194, external: 100}}
+    # 31 Oct: six deep fields from data/fields (F435W 7200 s, F606W / F775W two exposures). Not used: GOODS-S-6, GOODS-S-7
+    # (single exposures). GOODS-N-7 was never scored: it replaces the GOODS-N-4 stripe as clean GOODS-North external data
+    # yields: true = where it overlaps another split, that split keeps the sky (held-out data does not shrink)
+    - {name: GOODS-N-6, match: [j8dn99, j8dnb4], split: train, yields: true}
+    - {name: GOODS-N-7, match: [j8dna6, j8dnc1, j8dnf2], split: external}
+    - {name: GOODS-N-9, match: [j8dna9, j8dnc4], split: train, yields: true}
+    - {name: GOODS-S-5, match: [j8e607, j8e622], split: train}
+    - {name: GOODS-S-8, match: [j8e613, j8e628], split: train}
+    - {name: GOODS-S-9, match: [j8e609, j8e624], split: train}
   stripe_share: gzh_galaxies  # gzh_galaxies = stripe sizes by share of the pointing's GZH galaxies (positions only)
                              # | data_area = by share of the area with data (the 70/15/15 single-pointing rule)
-  phase7_region: auto        # auto = external pointings if any, else the held-out TEST split
-                             # (one field: Phase 7 is evaluated on galaxies never trained on) | external | test
-  manual_regions: []         # used when mode: manual, e.g.
-  #  - {name: COSMOS_A, ra: [150.05, 150.15], dec: [2.15, 2.25], split: train}
 
 # ---------------------------------------------------------------- Stage 1a
 acquisition:
@@ -95,7 +100,7 @@ detection:
   nsigma: 2.0
   npixels: 10
   deblend_nlevels: 32
-  deblend_contrast: 0.001
+  deblend_contrast: 0.005        # 31 Oct: was 0.001 (split spiral arms / clumps into separate sources); SExtractor default
   correlated_noise_factor: 1.0   # drizzled noise is correlated; >1 inflates the rms (see README)
   # ---- band registration (bands from different HST programmes can disagree by ~1") ----
   register_bands: true           # measure each band's offset against the detection band and remove it
@@ -204,6 +209,16 @@ gating:
   transitional_p: 0.80
   outlier_max_p: 0.50
   recon_percentile: 99.0
+  bright_star_mask: true           # Gaia stars G < bright_star_gmax with |parallax| > 1 mas or PM > 5 mas/yr:
+  bright_star_gmax: 17.0           #   nearest source within core -> Star (saturated); others within
+  bright_star_core_arcsec: 3.0     #   a + b x (gmax - G) arcsec -> Noise (spikes, halo, bleed column)
+  bright_star_radius: [2.0, 4.5]   #   [a, b]: 2" at G = 17 ... 20" at G = 13
+  fragment_rule: true              # a Galaxy inside a BRIGHTER Galaxy's half-light radius = deblending piece -> fragment_of
+  fragment_max_rhalf_arcsec: 2.0   # a parent must have a trusted radius: statmorph flag <= 1 and r_half at most this
+  unresolved_rule: true            # Galaxy sharper than unresolved_fwhm_ratio x PSF AND (a band missing OR
+  unresolved_fwhm_ratio: 0.8       #   Stage 2c baseline Noise) -> Noise
+  cr_gate: true                    # Galaxy losing > cr_gate_fraction of its central light to the Stage 9 cleaner -> Noise
+  cr_gate_fraction: 0.7            # chosen on train + dev only: removes 27 % of unlabelled galaxies, 0.9 % of GZH-labelled
 
 # ---------------------------------------------------------------- Catalogues
 catalogs:
@@ -224,8 +239,8 @@ catalogs:
       odd_disturbed: t08_odd_feature_a03_disturbed_weighted_fraction
       odd_merger: t08_odd_feature_a06_merger_weighted_fraction
       clumpy: t12_clumpy_a01_yes_weighted_fraction
-    thresholds: {smooth: 0.6, features: 0.5, edgeon: 0.5, spiral: 0.5, irregular: 0.5,
-                 odd: 0.4, merger: 0.5}
+    thresholds: {smooth: 0.6, smooth_min: 0.4, features: 0.4, edgeon: 0.4, spiral: 0.4, clumpy: 0.5,
+                 irregular: 0.4, odd: 0.4, merger: 0.5}   # 31 Oct: Stage 3a rule; was smooth / features / edgeon / spiral / irregular 0.6 / 0.5 / 0.5 / 0.5 / 0.5
     boundary_agreement: 0.5
   gaia:
     file: auto                     # auto = *gaia* in data/catalogs (e.g. gaia_dr3.csv); or query online (below)
@@ -257,9 +272,16 @@ supervised:
   pretrained: true           # ImageNet weights for ResNet-18 and EfficientNet-B0 (downloaded once, ~66 MB)
   input_size: 224            # cutouts (128 px) are resized to this before the CNNs (ImageNet training size)
   feature_batch_size: 64
+  cnn_crop: true             # crop each cutout to the galaxy before the CNNs (the median galaxy is ~10 x 10 px of 128)
+  cnn_crop_petro: 4.0        #   crop side = this x the Petrosian radius (Pass 2) ...
+  cnn_crop_min: 32           #   ... at least this many pixels (at most the 128 px cutout)
+  cnn_mask_neighbours: true  # pixels of other sources (Stage 1c segmentation) -> sky, so the features describe the target
+  cnn_clean_cosmic_rays: true  # the Stage 9 cosmic-ray cleaner (atlas.cr_*) before the CNNs
+  cnn_tta_views: 4           # CNN features averaged over 1-4 rotations by 90 deg (orientation does not change the class)
   # ---- Stage 4b: ENSEMBLE (feature fusion) + XGBoost ----
   cv_folds: 5
   cv_group_arcsec: 30        # galaxies in the same 30" sky cell stay in the same fold
+  cv_link_arcsec: 6.4        # ... and so do galaxies closer than this (one 128-px cutout), across cell borders too
   selection_metric: log_loss # number of trees / block weights chosen by minimum out-of-fold log-loss (or macro_f1)
   xgb_max_trees: 400         # trees per class chosen from 10, 25, 50, ... this
   fusion_block_weights:      # ENSEMBLE weights [w1 ResNet-18, w2 EfficientNet-B0, w3 physical]: the share of the
@@ -270,8 +292,13 @@ supervised:
     - [0.25, 0.25, 0.50]     # physics-heavy
     - [0.50, 0.25, 0.25]     # ResNet-heavy
     - [0.25, 0.50, 0.25]     # EfficientNet-heavy
+  cnn_pca_components: 32     # each CNN block -> this many principal components, fitted inside every CV fold (0 = off)
+  label_confidence_weights: true  # sample weights x GZH vote fraction (renormalised per class)
+  xgb_grid:                  # searched together with fusion_block_weights (lowest OOF log-loss)
+    max_depth: [3, 4, 6]
+    colsample_bytree: [0.3, 0.6]
   xgboost:                   # the "compile" step of XGBoost (p2p/xgb_worker.py has the same defaults)
-    max_depth: 4             # shallow trees: ~1,100 galaxies, 1,806 features
+    max_depth: 4             # shallow trees: ~1,100 galaxies (xgb_grid overrides max_depth / colsample_bytree)
     min_child_weight: 2
     learning_rate: 0.05
     subsample: 0.8           # random 80 % of the galaxies per tree     (tree equivalent of dropout)
@@ -280,17 +307,46 @@ supervised:
     reg_alpha: 0.0           # L1 penalty
     tree_method: hist
     n_jobs: 4
+  # ---- Stage 4b: FINAL MODEL = equal-weight average of these members' probabilities (then Stage 4c calibration) ----
+  ensemble_members:          # any of: resnet18_ft, efficientnet_b0_ft (fine-tuned CNNs), xgb_physical (14 physical
+    - resnet18_ft            # features), xgb_fusion (frozen CNN features + physical, the XGBoost above). All are
+    - efficientnet_b0_ft     # cross-validated on the same 5 folds; ensemble_members.csv scores every combination.
+    - xgb_physical           # 30 Oct experiment: this trio 0.51 Macro-F1 vs xgb_fusion alone 0.47 (out-of-fold)
+    - xgb_fusion             # 31 Oct: fourth member, 14-pointing out-of-fold Macro-F1 0.543 -> 0.550, log-loss 1.134 -> 1.112
+  ensemble_member_weights: null   # null = equal. To try images and physics equal, one vote each:
+                             #   {resnet18_ft: 0.25, efficientnet_b0_ft: 0.25, xgb_physical: 0.5}. No retraining:
+                             #   python tools/reweight_ensemble.py compares them; --apply, then --from 4c
+  extra_physical_features: [shape_asymmetry, multimode, intensity, deviation]   # classifiers only (Stages 2a-2b are untouched)
+  train_on_buffer: true      # 31 Oct (Sangeeta): GZH-labelled buffer galaxies join the training pool. Compare the
+                             # "out-of-fold score without them" in the Stage 4b log with the run without them
+  buffer_min_separation_arcsec: 7.2    # only those at least this far from every test and external galaxy (no shared pixels)
+  finetune:                  # the fine-tuned CNN members (src/p2p/finetune.py)
+    enabled: true            # false = no CNN is trained; the ensemble then uses the XGBoost members only
+    networks: [resnet18, efficientnet_b0]
+    input_size: 112          # galaxy stamp (Stage 4a preparation) resized to this; 112 px keeps CPU training ~1 h
+    epochs: 12               # fixed: the 20-epoch validation curves were lowest at epochs 9-12, then overfit
+    batch_size: 32
+    lr: 0.0003               # AdamW peak learning rate, one-cycle schedule
+    weight_decay: 0.0001     # decoupled L2 weight decay
+    label_smoothing: 0.1     # GZH labels are noisy (twin agreement ~41 %)
+    soft_labels: false       # tested 31 Oct: CNNs 0.474 / 0.482 vs 0.504 / 0.514 with hard labels. true (--from 4b) = train on the GZH vote fractions instead of the hard class
+    dropout: 0.3             # before the new Dense(5) head
+    trainable: last2         # last2 = ResNet layer3-4 / EfficientNet features.5-8 trained; last1; all
+    tta_views: 4             # predictions averaged over 4 rotations by 90 deg
+    history_train_eval: true # also measure the training loss / accuracy each epoch (for the history plots)
   # ---- Stage 4d: ablation ----
   ablation_input_size: 128   # the fusion is also cross-validated with features from 128 px (no resize)
-  compare_previous_ensemble: Output_beofreF1   # outputs folder of the earlier three-model ensemble run (its
-                             # out-of-fold predictions are scored on the same galaxies); null = no such row
 
 # ---------------------------------------------------------------- Stages 6-7
 evaluation:
-  test_sealed: true          # true while developing: Stages 6a-7c do NOT score the test pointing or the Phase-7
-                             # (external) pointings, so nothing can be tuned on them; all decisions use the
-                             # cross-validation of train + dev. Final run: set false, then
-                             # python run_pipeline.py --from 6a   (once; Stage 6a's ledger records every evaluation)
+  gradcam: true              # true (--only 6c) = Grad-CAM of the fine-tuned CNNs, gradcam_<network>.png
+  gradcam_per_class: 4       # galaxies shown per class
+  seal_external: false       # final run (31 Oct). the ONE seal. true while the model is not final: the external galaxies (GOODS-N-7 and external stripes of
+                             # GOODS-S, GOODS-N-2, GOODS-N-4) are processed and catalogued like any new field, but no
+                             # stage scores them against their labels. Train, dev, test and buffer galaxies go through
+                             # every phase (6a-6c test, 7a-7c CANDELS ceiling / cross-catalogue / gap).
+                             # Final run: set false, then  python run_pipeline.py --from 7a  (Phase 7 then includes the
+                             # external galaxies and Stage 7b also scores their GZH labels)
 
 # ---------------------------------------------------------------- Stage 8
 catalogue:
@@ -299,6 +355,7 @@ catalogue:
 
 # ---------------------------------------------------------------- Stage 9
 atlas:
+  uncertain_below: 0.4           # 31 Oct: predictions with a top probability below this go to images/Uncertain/
   enabled: true
   min_snr: 0                 # only image galaxies with snr >= this (0 = every galaxy)
   max_galaxies: null         # null = all; a number keeps the most confident ones
@@ -317,7 +374,7 @@ atlas:
   gallery_columns: 6
   overview_per_class: 6
 
-# ---------------------------------------------------------------- tools/run_field.py, app.py
+# ---------------------------------------------------------------- tools/run_field.py
 field_runner:
   min_gzh_labels: 150        # fewer GZH galaxies than this in the field(s) -> apply mode (frozen model bundle)
   footprint_radius_deg: 0.028   # GZH / CANDELS counted within this radius of each target (ACS/WFC ~ 0.028 deg)
