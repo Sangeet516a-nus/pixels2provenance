@@ -1,39 +1,16 @@
-"""Stage 1c - Detection, deblending, band registration, cosmic-ray checks and aligned cutouts.
+"""Stage 1c - Detection, band registration, cosmic-ray tests and aligned cutouts (no learned model).
 
-Purpose : locate every source and register all filters into one cutout.
-Method  : per pointing, each band is background-subtracted (Background2D on
-          covered pixels only). Sources are detected on the smoothed detection
-          band (nsigma x rms, npixels) and deblended.
-          Band registration: bright extended sources of every band, detected on
-          a median-filtered image (cosmic rays erased), are matched to those of
-          the detection band; the offset is removed from that band's WCS (bands
-          from different HST programmes can disagree by ~1"). An offset that
-          does not stand out from random pairs stops the stage; a known offset can
-          be given in detection.band_offsets_arcsec.
-          The stage FAILS if a residual offset exceeds
-          detection.max_band_offset_arcsec (multiband.py).
-          Cosmic rays (single exposures cannot reject them): every detection
-          segment is measured in every other band; a source that no other
-          covering band confirms at S/N >= detection.confirm_snr is a cosmic-ray
-          candidate (cr_candidate). The source cap is applied to confirmed sources
-          and to cosmic-ray candidates separately, so cosmic rays cannot crowd
-          real sources out.
-          For every source a north-up 128x128 stamp is resampled from EACH band
-          at the same RA/Dec with a local affine WCS mapping, so bands with
-          different pixel scales or orientations line up exactly. Values are
-          scaled by the pixel-area ratio (e-/s per output pixel). Cosmic-ray
-          pixels inside a stamp (much brighter in one band than the other bands
-          predict from the source's colour) are replaced by that prediction and
-          marked 3 in the segmentation stamp, so morphology masks them.
-          A segmentation stamp records target (1) / other sources (2) / cosmic-ray
-          pixels (3): the image models see the UNMASKED stamp (merger companions
-          kept), while Stage 1e measures morphology with neighbours and cosmic-ray
-          pixels masked. Truncation is flagged from the WHT coverage (edge_flag),
-          frame-QC flags come from Stage 1b (any band), exposures per source from
-          the drizzle context (CTX), and each source gets its Stage-0 split
-          ('buffer' inside a collar).
-Output  : sources.csv, cutouts_raw.npy (N, bands, 128, 128, float16),
-          segstamps.npy (N, 128, 128, uint8), registration.json, preview PNGs.
+Per pointing:
+  1. Background-subtract every band; detect and deblend sources on the detection band (photutils).
+  2. Register each band to the detection band: offsets measured on median-filtered images (cosmic rays erased)
+     are removed from the band's WCS; the stage stops if the offset cannot be measured or a residual remains.
+  3. Measure every source in every band. A source that no other covering band confirms (S/N >= confirm_snr,
+     light at the same position) is a cosmic-ray candidate. Confirmed sources and candidates are capped separately.
+  4. Cut a north-up 128 x 128 stamp per source from every band at the same RA/Dec (affine resampling).
+     Cosmic-ray pixels (far brighter in one band than the source colour predicts) are replaced and marked.
+  5. Flags: edge (WHT coverage), frame QC (Stage 1b tiles), saturation, exposures (CTX); split from Stage 0.
+Output  : sources.csv, cutouts_raw.npy (N, bands, 128, 128, float16), segstamps.npy (N, 128, 128, uint8:
+          1 target, 2 neighbour, 3 cosmic-ray pixel), registration.json, summary.json, preview PNGs.
 """
 from __future__ import annotations
 
@@ -54,8 +31,8 @@ from .stage0_partition import SkyRegionPartitioner
 
 
 def affine_for(wcs, ra0, dec0, size, scale_arcsec):
-    """Matrix/offset for ndimage.affine_transform mapping a north-up cutout
-    (row, col) onto the band's pixel grid (row, col) around (ra0, dec0)."""
+    """ndimage.affine_transform matrix/offset from a north-up cutout (row, col) to the band's pixels, and the
+    pixel-area ratio."""
     c = (size - 1) / 2.0
     cosd = np.cos(np.deg2rad(dec0))
     # cutout pixel (u, v) -> sky: east is left (RA grows to -u), north is up
@@ -78,9 +55,8 @@ def make_stamp(img, M, offset, size, order=1):
 
 
 def flagged_tiles(ctx: Ctx):
-    """Flagged tiles as their CENTRAL stride x stride cell. The QC tiles overlap (128 px every 64 px), so
-    each pixel lies in the centre cell of exactly one tile per band; judging a source by every tile that
-    touches it would give it up to 4 chances per band and inflate the flag rate several-fold."""
+    """Stage 1b flagged tiles as their central stride x stride cell (tiles overlap, so each pixel is judged by
+    exactly one tile per band)."""
     p = ctx.path("1b", "tile_qc.csv")
     if not p.exists():
         return {}
@@ -101,8 +77,7 @@ def in_flagged(x, y, boxes):
 
 
 def saturated_cores(sub, rms, x, y, half=4, tol=0.02, min_peak_sigma=50.0):
-    """Flat-topped cores on the NATIVE pixels of the detection image (a resampled cutout rounds a flat top
-    off): the 5 brightest pixels within +-4 px of the centroid agree to 2 % and the peak is >= 50 sigma."""
+    """Flat-topped cores on native pixels: the 5 brightest pixels within +-4 px agree to 2 %, peak >= 50 sigma."""
     h, w = sub.shape
     out = np.zeros(len(x), bool)
     for k, (xc, yc) in enumerate(zip(np.round(x).astype(int), np.round(y).astype(int))):
@@ -117,9 +92,8 @@ def saturated_cores(sub, rms, x, y, half=4, tol=0.02, min_peak_sigma=50.0):
 
 
 def register_bands(ctx, pid, imgs, det_b, dcfg):
-    """Measure (and remove) the sky offset of every band against the detection band. Returns a report.
-    Both lists come from median-filtered images (registration_catalog): in a single exposure the brightest
-    'sources' are cosmic rays, which pair at random between bands."""
+    """Measure and remove each band's sky offset against the detection band (sources from median-filtered
+    images, so cosmic rays do not pair at random). Returns the per-band report."""
     det = imgs[det_b]
     ra0, dec0 = det["wcs"].wcs.crval
     limit = float(dcfg.get("max_band_offset_arcsec", 0.05))
@@ -222,8 +196,7 @@ def process_pointing(ctx, pid, p, bands, rules, qc_boxes, pidx):
     max_lab = int(lab_img.max())
     li = tab.label.to_numpy()
     confirm = float(dcfg.get("confirm_snr", 3.0))
-    # allowed centroid shift: 1.5 px, or a fraction of the source's equivalent radius for large galaxies
-    # (colour gradients move a big galaxy's centroid between bands; cosmic-ray segments are small)
+    # allowed centroid shift between bands: 1.5 px, or half the equivalent radius for large galaxies
     max_shift = np.maximum(float(dcfg.get("confirm_max_shift_px", 1.5)),
                            float(dcfg.get("confirm_max_shift_frac", 0.5)) * np.sqrt(tab.area_px.to_numpy() / np.pi))
     best_other = np.full(len(tab), np.nan)
@@ -231,6 +204,8 @@ def process_pointing(ctx, pid, p, bands, rules, qc_boxes, pidx):
     for b, im in imgs.items():                       # cosmic-ray-free copies for the centroid test
         im["med"], im["med_noise"] = median_image(im["sub"], im["val"], 3)
     phot = {b: segment_photometry(lab_img, det["wcs"], imgs.get(b), det["pixarea"], max_lab, corr) for b in bands}
+    for im in imgs.values():                         # full-frame copies no longer needed (memory)
+        im.pop("med", None)
     dcx, dcy = phot[det_b][3][li], phot[det_b][4][li]
     for b in bands:
         fl, er, cov, cx, cy = phot[b]
@@ -241,11 +216,11 @@ def process_pointing(ctx, pid, p, bands, rules, qc_boxes, pidx):
         if b != det_b and b in imgs:
             covered = cov[li] >= 0.9
             n_cover_other += covered
-            # a band confirms only with light at the SAME place: S/N counts only if the centroid agrees
+            # a band confirms only with light at the same position
             snr_here = np.where(tab[f"segshift_{b}"].to_numpy() <= max_shift, (fl / er)[li], np.nan)
             best_other = np.fmax(best_other, np.where(covered, snr_here, np.nan))
     tab["confirm_snr_best"] = best_other
-    # True = no other covering band sees it; False = confirmed; None = no other band covers it (unknown)
+    # True = no other covering band sees it; False = confirmed; None = no other band covers it
     use_cr = str(dcfg.get("cr_rejection", "two_band")).lower() != "none"
     tab["cr_candidate"] = [None if (not use_cr or n == 0) else bool(not (np.isfinite(s) and s >= confirm))
                            for n, s in zip(n_cover_other, best_other)]
@@ -277,7 +252,7 @@ def process_pointing(ctx, pid, p, bands, rules, qc_boxes, pidx):
     mag_snr = float(dcfg.get("mag_min_snr", 2.0))
     rows = []
     for i, r in enumerate(tab.itertuples()):
-        vstamps, n_nb, valid_det = {}, 0, None
+        n_nb = 0
         raw = np.zeros((len(bands), S, S), np.float32)
         sig = np.full((len(bands), S, S), np.inf, np.float32)
         val = np.zeros((len(bands), S, S), bool)
@@ -287,7 +262,7 @@ def process_pointing(ctx, pid, p, bands, rules, qc_boxes, pidx):
             im = imgs[b]
             M, off, area_ratio = affine_for(im["wcs"], r.ra, r.dec, S, scale)
             raw[bi] = make_stamp(im["sub"], M, off, S) * area_ratio
-            vstamps[b] = val[bi] = make_stamp(im["valf"], M, off, S, order=0) > 0.5
+            val[bi] = make_stamp(im["valf"], M, off, S, order=0) > 0.5
             bx, by = im["wcs"].world_to_pixel_values(r.ra, r.dec)
             yi = int(np.clip(round(float(by)), 0, im["rms"].shape[0] - 1))
             xi = int(np.clip(round(float(bx)), 0, im["rms"].shape[1] - 1))
@@ -298,8 +273,8 @@ def process_pointing(ctx, pid, p, bands, rules, qc_boxes, pidx):
                 segs[i][(lab > 0) & (lab != r.label)] = 2
                 segs[i][lab == r.label] = 1
                 n_nb = len(set(np.unique(lab).tolist()) - {0, r.label})
-                valid_det = vstamps[b]
-        target = target0 = segs[i] == 1           # the full target footprint, before the cosmic-ray mask
+        valid_det = val[bands.index(det_b)]
+        target = segs[i] == 1                     # full target footprint, before the cosmic-ray mask
         sflux = np.array([getattr(r, f"segflux_{b}") for b in bands], float)
         ssnr = np.array([getattr(r, f"segsnr_{b}") for b in bands], float)
         n_cr_target = 0
@@ -315,30 +290,31 @@ def process_pointing(ctx, pid, p, bands, rules, qc_boxes, pidx):
                 n_cr_target = int((anyc & target).sum())
                 segs[i][anyc] = 3
         cubes[i] = raw.astype(np.float16)
-        target = segs[i] == 1                     # target pixels left after the cosmic-ray mask
         row = {"valid_frac": float(valid_det.mean()), "core_ok": bool(valid_det[core].all()), "n_neighbours": n_nb,
                "cr_pixels_masked": n_cr_target}
         for bi, b in enumerate(bands):
-            covered = b in imgs and bool(vstamps[b][core].all())       # this band has data on the source core
+            covered = b in imgs and bool(val[bi][core].all())          # this band has data on the source core
             row[f"covered_{b}"] = covered
-            fl = float(raw[bi][target0 & vstamps[b]].astype(np.float64).sum()) \
-                if covered else np.nan                    # whole footprint, cosmic-ray pixels replaced
+            # flux over the whole target footprint, cosmic-ray pixels replaced
+            fl = float(raw[bi][target & val[bi]].astype(np.float64).sum()) if covered else np.nan
             row[f"flux_{b}"] = fl
-            ok = b in imgs and fl > 0 and np.isfinite(imgs[b]["zp"])
-            ok = ok and np.nan_to_num(getattr(r, f"segsnr_{b}"), nan=0.0) >= mag_snr   # not detected: no magnitude
+            ok = covered and fl > 0 and np.isfinite(imgs[b]["zp"]) and np.nan_to_num(ssnr[bi]) >= mag_snr
             row[f"mag_{b}"] = -2.5 * np.log10(fl) + imgs[b]["zp"] if ok else np.nan
-            e = getattr(r, f"segflux_{b}") / getattr(r, f"segsnr_{b}") if np.isfinite(getattr(r, f"segsnr_{b}")) else np.nan
+            e = sflux[bi] / ssnr[bi] if np.isfinite(ssnr[bi]) else np.nan
             row[f"magerr_{b}"] = 1.0857 * e / fl if ok and np.isfinite(e) else np.nan
         rows.append(row)
     tab = pd.concat([tab, pd.DataFrame(rows)], axis=1)
+    if int(tab["label"].max()) >= 100000:            # object_id = pointing x 100000 + label must stay unique
+        raise RuntimeError(f"[Stage 1c] {pid}: segment label {int(tab['label'].max())} >= 100000 - object ids would "
+                           "collide with the next pointing. Raise detection.nsigma / npixels (far too many detections).")
     tab["object_id"] = (pidx + 1) * 100000 + tab["label"]
     tab["pointing"] = pid
     tab["role"] = p["role"]
     tab["detection_band"] = det_b
     tab["pixscale_out"] = scale
     tab["exptime"] = p["exptime_detection"]
-    tab["mag"] = -2.5 * np.log10(tab["flux"]) + det["zp"] if np.isfinite(det["zp"]) else -2.5 * np.log10(tab["flux"])
-    # statistical centroid error, sigma = source size / SNR per axis (the absolute WCS error is not included)
+    tab["mag"] = -2.5 * np.log10(tab["flux"]) + (det["zp"] if np.isfinite(det["zp"]) else 0.0)
+    # statistical centroid error = source size / SNR per axis (absolute WCS error not included)
     pos_err = tab.fwhm_px / 2.3548 / tab.snr * det["scale"]
     tab["ra_err"] = pos_err.round(5)
     tab["dec_err"] = pos_err.round(5)
@@ -364,9 +340,10 @@ def process_pointing(ctx, pid, p, bands, rules, qc_boxes, pidx):
     split = rules.assign_many(tab.ra, tab.dec)
     if p["role"] == "external":
         split = ["external" if s == "external" else None for s in split]
-    tab["split_tag"] = [s if s is not None else "buffer" for s in split]     # buffer = inside a collar
-    ctx.log.info(f"[Stage 1c] {pid}: cosmic-ray pixels masked in {int((tab.cr_pixels_masked > 0).sum())} of "
-                 f"{len(tab)} target footprints (median {tab.cr_pixels_masked[tab.cr_pixels_masked > 0].median() if (tab.cr_pixels_masked > 0).any() else 0} px)")
+    tab["split_tag"] = [s if s is not None else "buffer" for s in split]     # buffer = no split (collar)
+    hit = tab.cr_pixels_masked[tab.cr_pixels_masked > 0]
+    ctx.log.info(f"[Stage 1c] {pid}: cosmic-ray pixels masked in {len(hit)} of {len(tab)} target footprints "
+                 f"(median {hit.median() if len(hit) else 0} px)")
     _preview(ctx, pid, det, tab, cubes, bands)
     return tab, cubes, segs, registration
 
@@ -414,11 +391,9 @@ def run(ctx: Ctx):
     bl = list(bands)
     sources["colour_1"] = sources[f"mag_{bl[0]}"] - sources[f"mag_{bl[1]}"] if len(bl) > 1 else np.nan
     sources["colour_2"] = sources[f"mag_{bl[1]}"] - sources[f"mag_{bl[2]}"] if len(bl) > 2 else np.nan
-    # band consistency: weakest other-band flux relative to the detection band. A real source
-    # shows up in every filter; a cosmic ray or hot pixel in a single exposure stack does not.
+    # band consistency: weakest other-band flux / detection-band flux, over the bands that cover the source
+    # (a real source shows in every filter, a cosmic ray in one)
     det_flux = sources.apply(lambda r: r[f"flux_{r.detection_band}"], axis=1)
-    # only bands that COVER the source count: outside the overlap of the bands' footprints a missing band
-    # is missing data, not evidence of a single-band artefact
     ratios = [(sources[f"flux_{b}"] / det_flux).where((sources.detection_band != b) & sources[f"covered_{b}"])
               for b in bl]
     sources["band_consistency"] = np.clip(pd.concat(ratios, axis=1).min(axis=1), 0, 2) if len(bl) > 1 else np.nan

@@ -11,3 +11,12 @@ data/catalogs/*
 data_demo/
 config_demo.yaml
 .ipynb_checkpoints/
+.DS_Store
+.idea/
+.claude/
+data/fields/
+data/not_used/
+runs/
+models/
+config_run.yaml
+report/AIS_*

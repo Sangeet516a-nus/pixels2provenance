@@ -1,150 +1,357 @@
 # From Pixels to Provenance
 
-**Automated galaxy morphology classification in HST archival imaging** — NUS-ISS PRS Practice Module
-(Sangeeta Bahrani, A0339780R).
+**Automated galaxy morphology classification in archival Hubble Space Telescope images.**
 
-The pipeline takes Level-3 HST drizzled images (`_drc.fits`) and produces one calibrated,
-provenance-tracked catalogue (`catalog.csv`): every detected source is separated into
-Star / Galaxy / Noise without labels, galaxies get a 5-class morphology and a merger
-probability from a supervised ensemble, and the result is evaluated in-domain (Galaxy Zoo: Hubble)
-and across catalogues (CANDELS).
+NUS-ISS Graduate Certificate in Pattern Recognition Systems, Practice Module
+Sangeeta Bahrani (A0339780R) · Supervisor: Zhu Fangming
 
-Each stage of the proposal is one Python file in `src/p2p/stages/`, runs on its own, and writes
-its results to its own folder under `outputs/`, so you can stop after any stage and look at what it did.
+The project takes calibrated HST images in FITS format and produces one catalogue, `catalog.csv`, in which every
+detected source says what it is, how sure the model is, and where each value came from. It also writes a colour
+PNG of every classified galaxy.
+
+The full method and results are in the
+[project report](report/Pixels2Provenance_Project_Report_31Oct_FINAL.docx). The history of every change is in
+[`DEVELOPMENT_LOG.md`](DEVELOPMENT_LOG.md).
 
 ---
 
-## 1. Set up (once)
+## What the project does
+
+Raw archive images mix galaxies, stars and false detections such as cosmic rays. Morphology labels exist for only
+some galaxies, and they come from volunteer votes rather than fixed classes. The pipeline handles this in six steps:
+
+1. **Prepare the images.** It checks frame quality, detects and deblends sources, aligns the filters, rejects
+   cosmic rays, matches the PSF across filters and measures morphology with `statmorph`.
+2. **Separate sources without labels.** A convolutional autoencoder, a Gaussian mixture model, HDBSCAN outlier
+   scores and physical rules sort every source into Galaxy, Star or Noise. Each change made by a rule is recorded.
+3. **Use the stars for calibration.** Clean stars build an empirical PSF for each pointing, and the galaxies are
+   then measured again with it.
+4. **Classify the galaxies.** Labels are derived from Galaxy Zoo: Hubble (GZH) vote fractions. Four models are
+   averaged with equal weight and calibrated: fine-tuned ResNet-18, fine-tuned EfficientNet-B0, an XGBoost on 18
+   physical features, and a fusion XGBoost on frozen CNN features plus those physical features. A separate XGBoost
+   gives a merger probability.
+5. **Test the result.** The model is scored on held-out sky regions with the same GZH-derived labels, and on the
+   independent CANDELS expert catalogue (Kartaltepe et al. 2015), where agreement between the two human catalogues
+   sets the ceiling.
+6. **Deliver.** It writes a 95-column catalogue with calibrated probabilities and provenance flags, plus a galaxy
+   image atlas sorted by predicted class.
+
+**Classes:** Smooth, FaceOnSpiral, EdgeOn, Irregular and Ambiguous, plus a separate merger probability.
+
+## Final results
+
+Final run of 31 October 2026: 14 GOODS pointings, 42 FITS files, about 4 hours on an Apple-silicon Mac.
+
+| Evaluation | Galaxies | Macro-F1 (95 % CI) | Accuracy | Galaxies given a shape |
+|---|---:|---:|---:|---:|
+| Out-of-fold (train + dev) | 3,185 | 0.551 (0.533–0.569) | 0.556 | 85.2 % |
+| **Test** | **328** | **0.548 (0.494–0.599)** | **0.543** | **88.1 %** |
+| External sky | 434 | 0.562 (0.515–0.606) | 0.576 | 85.7 % |
+
+| Other measure | Result | Proposal tier |
+|---|---|---|
+| Morphology Macro-F1 (Target 0.65; majority-class baseline 0.084) | 0.548 on test | Minimum |
+| Merger PR-AUC (test prevalence 0.030, only 10 test mergers) | 0.131 on test | Minimum |
+| Calibration ECE | 0.074 on test | Minimum |
+| Ensemble gain over the best single source | +0.023 | Minimum |
+| Learned star finder vs baseline, F1 against Gaia | 0.452 vs 0.608 | Minimum not met |
+| CANDELS: human-human ceiling and cross-catalogue Macro-F1 | 0.276 and 0.227 | Gap quantified |
+
+**Catalogue:** 42,827 rows and 95 columns: 13,242 galaxies (12,453 classified), 254 stars and 29,331 noise rows.
+4,254 galaxies have a GZH label, and 2,415 are matched to CANDELS.
+
+**Limits of these results:**
+
+- The scores measure agreement with labels derived from volunteer votes, not physical truth.
+- The 8,199 galaxies with a model prediction only are fainter than the labelled ones, so they are not directly
+  scored.
+- The test split was evaluated four times during development, and every evaluation is recorded in
+  [`test_split_ledger.json`](test_split_ledger.json). An external score was also seen once before the final run.
+  No model choice used those scores.
+
+Section 14 of the report gives the full discussion.
+
+---
+
+## Requirements
+
+- Python 3.10–3.13
+- About 10 GB of disk space for the 42 FITS files and another 10 GB for the outputs of a full run
+- A GPU is optional: Apple MPS or CUDA is used automatically, and a CPU works but is much slower
+- Internet access for downloading images and catalogues, and ImageNet weights on the first run (about 66 MB)
+
+## Setup
 
 ```bash
-# in VS Code: File > Open Folder... > pixels2provenance, then Terminal > New Terminal
+git clone https://github.com/Sangeet516a-nus/pixels2provenance.git
+```
+
+```bash
+cd pixels2provenance
+```
+
+```bash
 python -m venv .venv
-# Windows:      .venv\Scripts\activate
-# macOS/Linux:  source .venv/bin/activate
+```
+
+```bash
+source .venv/bin/activate
+```
+
+On Windows, use `.venv\Scripts\activate` instead.
+
+```bash
 pip install -r requirements.txt
-# if statmorph fails to build:
+```
+
+If `statmorph` fails to build:
+
+```bash
 pip install --no-build-isolation statmorph
 ```
-In VS Code pick the `.venv` interpreter (Ctrl/Cmd+Shift+P → *Python: Select Interpreter*).
 
-## 2. Run on real data
+The FITS images and catalogues are too large for GitHub, so `data/raw/` and `data/catalogs/` are not in the
+repository. Download them with the next two sections.
 
-1. **Images** → `data/raw/`. For each pointing, the same field in 2–3 filters:
-   ```bash
-python tools/get_fits.py --out <folder> --target <RA>,<Dec>,<name> [--instrument <instrument>] [--filters <f1> <f2> <f3>] [--gaia] [--list] [--allow-single]
-   ```
-   or download by hand from the [MAST Portal](https://mast.stsci.edu) (HST, calibration level 3, DRC).
-   Check a file with `python tools/inspect_fits.py data/raw/<file>_drc.fits`.
-   Choose a field that **Galaxy Zoo: Hubble covers** (AEGIS, COSMOS, GEMS, GOODS-N, GOODS-S).
-   COSMOS has HST imaging in F814W only — the pipeline then runs with one band.
-
-
-2. **Catalogues** → `data/catalogs/` (see `data/catalogs/README.md`):
-   * GZH Table 4: `gz_hubble_main.csv.gz` from
-     https://zooniverse-data.s3.amazonaws.com/galaxy-zoo-hubble/gz_hubble_main.csv.gz (required)
-   * Gaia DR3 (optional, for star validation) — run in the Gaia archive (https://gea.esac.esa.int/archive/),
-     save as `data/catalogs/gaia_dr3.csv`:
-     ```sql
-     SELECT source_id, ra, dec, parallax, pmra, pmdec, phot_g_mean_mag, teff_gspphot
-     FROM gaiadr3.gaia_source
-     WHERE 1 = CONTAINS(POINT('ICRS', ra, dec), CIRCLE('ICRS', 53.12, -27.80, 0.06))
-     ```
-   * CANDELS / Kartaltepe et al. (2015) FRACTIONAL table, VizieR `J/ApJS/221/11/table3`, saved as
-     `data/catalogs/candels_k15.csv` (Phase 7): `python tools/download_catalogs.py candels`.
-   Then `python tools/check_catalog_columns.py` to confirm the column mapping.
-3. **Edit `config.yaml`** if needed: `partition.external_patterns` (which pointings are a separate CANDELS
-   field; with one field leave it empty - Phase 7 then uses the held-out test split), `partition.collar_arcmin`,
-   `acquisition.bands`.
-4. **Run**: `python run_pipeline.py` (or the *P2P: run full pipeline* entry in VS Code's Run and Debug panel).
-
-## 3. Running single stages
+## Download the reference catalogues
 
 ```bash
-python run_pipeline.py --list            # all stages, their files and output folders
-python run_pipeline.py --only 1c         # one stage (its inputs must already exist)
-python run_pipeline.py --from 2a         # from 2a to the end
-python run_pipeline.py --from 1a --to 1e
+python tools/download_catalogs.py gzh
 ```
-`python tools/show_stage.py 2d` prints a stage's purpose and method, the files it wrote, and the
-numbers in its JSON outputs - the quickest way to understand a stage after running it.
-Everything printed is also written to `outputs/pipeline.log`; `outputs/run_log.json` records the
-status, run time and summary of every stage. VS Code: **Run and Debug** → *P2P: run ONE stage* lets
-you pick a stage from a list and set breakpoints in its file.
 
-## 4. Stages, files and outputs
+```bash
+python tools/download_catalogs.py candels
+```
 
-Execution order puts **Phase 5 before Phase 4**: the supervised models train on the PSF-refined
-Pass-2 features they are later deployed on.
+```bash
+python tools/download_catalogs.py gaia --ra 53.117 --dec -27.754 --radius 0.2
+```
 
-| Stage | File (`src/p2p/stages/`) | Main outputs (`outputs/<folder>/`) |
+```bash
+python tools/download_catalogs.py gaia --ra 189.228 --dec 62.238 --radius 0.2
+```
+
+Then check the column mapping:
+
+```bash
+python tools/check_catalog_columns.py
+```
+
+| Catalogue | Role | Required? |
 |---|---|---|
-| 0 Sky-region partitioning | `stage0_partition.py` | `split_rule.json`, `split_regions.png` |
-| 1a Acquisition / scan | `stage1a_acquisition.py` | `manifest.json`, `pointings.json` |
-| 1b Frame QC (CAE) | `stage1b_frame_qc.py` | `tile_qc.csv`, `*_qc.png`, `qc_threshold.json` |
-| 1c Detection + aligned cutouts | `stage1c_detection.py` | `sources.csv`, `cutouts_raw.npy`, `segstamps.npy`, `P*_cutouts.png` |
-| 1d PSF homogenisation | `stage1d_psf_match.py` | `cutouts.npy` (used from here on), `psf_match.json` |
-| 1e Pass-1 morphology | `stage1e_pass1_morphology.py` | `features_pass1.csv`, `pass1_morphology.png` |
-| 2a Representation + fusion | `stage2a_representation.py` | `hybrid_features.npy`, `rep_cae.pt` |
-| 2b Clustering | `stage2b_clustering.py` | `clusters.csv`, `bic.png` |
-| 2c Baseline + Gaia match | `stage2c_baseline.py` | `baseline.csv`, `gaia_match.csv` |
-| 2d Semantic audit | `stage2d_semantic_audit.py` | `semantic_audit.json`, `montage_cluster_*.png` |
-| 2e Continuum gating | `stage2e_continuum_gating.py` | `segregation.csv`, `anomaly_log.csv` |
-| 3a GZH labels | `stage3a_gzh_labels.py` | `labels.csv`, `label_summary.json` |
-| 3b Star routing | `stage3b_star_routing.py` | `star_routing.csv` |
-| 3c Noise model | `stage3c_noise_model.py` | `noise_model.json`, `fpr_curve.png` |
-| 5a Empirical PSF | `stage5a_empirical_psf.py` | `epsf_<pointing>.fits`, `epsf.png` |
-| 5b Pass-2 refinement | `stage5b_pass2_refinement.py` | `features_pass2.csv`, `morph_delta_pass.csv` |
-| 4a Dual-branch network | `stage4a_dual_branch.py` | `dual_branch.pt`, `dev_metrics.json` |
-| 4b Ensemble | `stage4b_ensemble.py` | `efficientnet.pt`, `tabular_member.joblib` |
-| 4c Calibration | `stage4c_calibration.py` | `temperature.json`, `reliability_dev.png` |
-| 4d Ablation | `stage4d_ablation.py` | `ablation_table.csv`, `ablation.png` |
-| 6a In-domain test | `stage6a_test_eval.py` | `test_metrics.json`, `confusion_matrix_test.png` |
-| 6b Uncertainty audit | `stage6b_uncertainty.py` | `uncertainty_audit.json` |
-| 6c Grad-CAM + SHAP | `stage6c_xai.py` | `gradcam_examples.png`, `shap_summary.csv` |
-| 7a Taxonomy ceiling | `stage7a_taxonomy.py` | `taxonomy_alignment_matrix.csv`, `taxonomy_ceiling.json` |
-| 7b Cross-catalogue | `stage7b_crosscat.py` | `cross_catalogue_metrics.json` |
-| 7c Generalisation | `stage7c_generalisation.py` | `generalisation_report.json` |
-| 8 Catalogue | `stage8_catalogue.py` | **`catalog.csv`**, `catalog_columns.csv`, `delivery_checks.json` |
+| Galaxy Zoo: Hubble (Willett et al. 2017) | Training labels and galaxy evidence | Yes, unless running in apply mode |
+| Gaia DR3 | Star confirmation | Optional |
+| CANDELS (Kartaltepe et al. 2015) | Expert validation only, never training | Optional |
 
-Shared code: `context.py` (config, folders, stage list), `fitsio.py` (reading `_drc` files),
-`detection.py`, `morphology.py` (statmorph), `catalogs.py` (GZH/Gaia/CANDELS loaders),
-`nets.py` (all neural networks), `features.py`, `inference.py`, `utils.py`, `compat.py`.
-Every stage file starts with a docstring: *Purpose / Method / Output*.
+## Download FITS images
 
-## 5. How objects are linked across stages
+### Any sky position
 
-`sources.csv` (Stage 1c) gives every detection an `object_id` and a `cutout_index` (its row in
-`cutouts.npy`). Every later table is keyed by `object_id`; `p2p.context.load_objects()` merges them.
-`split_tag` (train / dev / test / external / empty = collar) is fixed in Stage 1c from the Stage-0
-rules and never changes.
+`tools/get_fits.py` searches the MAST archive and downloads one image per filter. It only downloads, and does not
+run the pipeline.
 
-## 6. What to expect with only a few files
+```bash
+python tools/get_fits.py --target <RA>,<DEC>,<FIELD_NAME> --filters <FILTER_1> <FILTER_2> <FILTER_3> --out <TARGET_FOLDER>
+```
 
-With one pointing, Stage 0 cuts the pointing into 70/15/15 stripes. One ACS pointing holds roughly
-100–200 GZH-labelled galaxies, so the test split has only a few dozen: Stage 6a reports 95 %
-bootstrap intervals — quote them. Train and test then share depth and PSF, so the in-domain test is
-easier than a separate field. With one field there is no separate CANDELS pointing: `partition.phase7_region: auto` then evaluates
-Phase 7 on the held-out **test** split (never trained on, so leakage-free; same depth and PSF as training,
-so the gap measures the change of label scheme, not a new field). Without the Kartaltepe table
-Stages 7a–7c are reported as *skipped* and the catalogue is still produced.
+| Part | Meaning | Example |
+|---|---|---|
+| `<RA>` | Right ascension in degrees | `189.15` |
+| `<DEC>` | Declination in degrees (keep the minus sign for southern positions) | `62.20` or `-27.80` |
+| `<FIELD_NAME>` | Short name, which also becomes the sub-folder name | `MY-FIELD` |
+| `<FILTER_n>` | Filters to download; leave out `--filters` to choose one per colour automatically | `F435W F606W F775W` |
+| `<TARGET_FOLDER>` | Parent folder; files go to `<TARGET_FOLDER>/<FIELD_NAME>/` | `data/fields` |
 
-**Check the unsupervised stage by eye.** The clustering settings (`representation.n_pca`,
-`spatial_weight`, `clustering.covariance_type`, `k_max`) were chosen on synthetic test images, where
-the true star / galaxy / cosmic-ray labels are known. On real data open
-`outputs/stage2d_semantic_audit/montage_cluster_*.png` and `semantic_audit.json`: each montage should
-look like the name it was given. If a "Galaxy" cluster is full of point sources, adjust and rerun from 2a.
+Do not put spaces around the commas in `--target`.
 
-## 7. Troubleshooting
+Check what would be downloaded first. `--list` downloads nothing:
 
-| Message | Fix |
+```bash
+python tools/get_fits.py --target 189.15,62.20,MY-FIELD --filters F435W F606W F775W --out data/fields --list
+```
+
+Then remove `--list` to download (each file is about 200–450 MB):
+
+```bash
+python tools/get_fits.py --target 189.15,62.20,MY-FIELD --filters F435W F606W F775W --out data/fields
+```
+
+Other useful options:
+
+| Option | Use |
 |---|---|
-| `... not found - run stage X first` | run the earlier stage, or use `--from` |
-| `No labelled galaxies in split(s) [...]` | the field is not covered by GZH, or the collar removed a stripe: lower `partition.collar_arcmin` |
-| `catalogs: required column(s) not found` | fix `catalogs.<kind>.columns` (see `tools/check_catalog_columns.py`) |
-| statmorph build error | `pip install --no-build-isolation statmorph` |
-| very slow Stage 1e / 5b | statmorph is ~0.5 s per source per core; set `project.n_jobs: -1` and/or lower `detection.max_sources_per_pointing` |
-| out of memory in 1c | real frames are ~4200² px x 3 bands; close other programs or process fewer pointings at a time |
-| HDBSCAN found no clusters | set `clustering.hdbscan_min_cluster_size` to a small number (e.g. 10) |
+| `--target ...` repeated | Download several positions in one command |
+| `--instrument` | `ACS/WFC` (default), `WFC3/UVIS` or `WFC3/IR` |
+| `--gaia` | Also save the Gaia DR3 stars around the position |
+| `--allow-single` | Accept single-exposure images when nothing else exists (expect many more cosmic rays) |
+| `--radius-arcmin` | Search radius, 2.0 by default |
 
-Runtime guide (4-core laptop, 1 real pointing x 3 bands, ~2000 detections): Stages 1b–1c ~5 min,
-1e ~5 min, 2a ~3 min, 5b ~3 min, 4a–4d ~15 min on CPU (much less on a GPU).
+The filters are chosen together, to maximise the sky area that all of them cover. Images made from several
+exposures come first, because they already have cosmic rays removed.
+
+### The exact 42 files of the final run
+
+To reproduce the report, use these exact files, because the split plan in `config.yaml` matches them by name.
+`get_fits.py` may choose different images for the same position. This loop downloads about 10 GB into `data/raw/`:
+
+```bash
+mkdir -p data/raw && for f in hst_11563_34_acs_wfc_f775w_jb5x34tc hst_11563_4i_acs_wfc_f606w_jb5x4ilh hst_9425_11_acs_wfc_f435w_j8e611rb hst_9583_a1_acs_wfc_f435w_j8dna1ar hst_9583_h8_acs_wfc_f606w_j8dnh8we hst_9583_h8_acs_wfc_f775w_j8dnh8wn hst_9803_33_acs_wfc_f606w_j8mt33ek hst_9803_39_acs_wfc_f435w_j8mt39ot hst_9803_41_acs_wfc_f775w_j8mt41fc j8dn99010 j8dna0010 j8dna3010 j8dna4010 j8dna6010 j8dna9010 j8dnb4010 j8dnb4030 j8dnb5010 j8dnb5030 j8dnb8010 j8dnb8030 j8dnb9010 j8dnb9030 j8dnc1010 j8dnc4010 j8dnc4030 j8dnf2030 j8e606010 j8e607010 j8e609010 j8e613010 j8e621010 j8e621030 j8e622010 j8e622030 j8e624010 j8e624030 j8e628010 j8e628030 j8e688010 j8e688030 jb5x4k010; do curl -fL -o "data/raw/${f}_drc.fits" "https://mast.stsci.edu/api/v0.1/Download/file?uri=mast:HST/product/${f}_drc.fits"; done
+```
+
+| Pointing | RA, Dec (deg) | Used for |
+|---|---|---|
+| GOODS-S | 53.180, -27.760 | train, dev, external stripes |
+| GOODS-S-2 | 53.015, -27.814 | test, dev stripes |
+| GOODS-S-3, -4, -5, -8, -9 | around 53.1, -27.8 | train |
+| GOODS-N-1, -6, -9 | around 189.3, 62.3 | train |
+| GOODS-N-2 | 189.310, 62.277 | train, test, external stripes |
+| GOODS-N-3 | 189.066, 62.163 | train, dev stripes |
+| GOODS-N-4 | 189.391, 62.315 | test, external stripes |
+| GOODS-N-7 | 189.065, 62.239 | external |
+
+All pointings use ACS/WFC F435W, F606W and F775W. GOODS-S, GOODS-S-2 and GOODS-N-1 use images with few exposures,
+so they contain far more cosmic rays than the others.
+
+## Run the project
+
+Reproduce the final run (about 4 hours on an Apple-silicon Mac, much longer on a CPU):
+
+```bash
+python run_pipeline.py
+```
+
+Stop and resume as needed:
+
+| Command | Use |
+|---|---|
+| `python run_pipeline.py --list` | Show all stages and their output folders |
+| `python run_pipeline.py --from 4a` | Run from a stage to the end |
+| `python run_pipeline.py --from 1a --to 1e` | Run a range of stages |
+| `python run_pipeline.py --only 1c` | Run one stage (its inputs must already exist) |
+| `python tools/show_stage.py 2d` | Show what a stage did, its files and its numbers |
+| `python tools/inspect_catalog.py` | Summarise a finished `catalog.csv` |
+
+**Do not edit `src/` or `config.yaml` during a run.** A stage that starts later would use the changed code.
+
+Results vary slightly between runs, because the autoencoders and networks are retrained and GPU training is not
+bit-reproducible. To compare with the final run, check these log lines:
+
+- Stage 1a: `42 verified file(s), 0 rejected`
+- Stage 8: `catalog.csv: 42827 rows x 95 columns`
+
+### Run on a new field
+
+1. Download the images with `tools/get_fits.py`, as above.
+2. Move the old files out of `data/raw/`, and copy the new field's FITS files into it.
+3. In `config.yaml`, set `partition.pointing_splits: []` and `partition.external_patterns: []`, because the
+   current values name the files of the final run. Stage 0 then assigns the splits automatically.
+4. Run `python run_pipeline.py`.
+
+To do these steps in one go, use the field runner. It moves the previous run to `runs/<time>/`:
+
+```bash
+python tools/run_field.py --target <RA>,<DEC>,<FIELD_NAME> --search-only
+```
+
+```bash
+python tools/run_field.py --target <RA>,<DEC>,<FIELD_NAME>
+```
+
+**Train or apply.** With at least 150 GZH galaxies in the field, the models are trained on it. Otherwise a saved
+model is applied, which you export from a finished run:
+
+```bash
+python tools/export_model.py --name <MODEL_NAME>
+```
+
+Apply mode and the field runner were not re-tested on the final model. Check `--search-only` before the
+first real download. GZH labels exist only for AEGIS, COSMOS, GEMS and GOODS, and CANDELS is used only for
+GOODS-South in this project.
+
+## Outputs
+
+Each stage writes to its own folder in `outputs/`, which is not in the repository because of its size.
+
+| File | Content |
+|---|---|
+| `outputs/stage8_catalogue/catalog.csv` | **The final catalogue** |
+| `outputs/stage8_catalogue/catalog_columns.csv` | Description of every column and the rows it fills |
+| `outputs/stage9_galaxy_atlas/galaxy_images.zip` | **Colour PNG of every classified galaxy, by predicted class** |
+| `outputs/stage6a_test_eval/test_metrics.json` | Test scores and tiers |
+| `outputs/stage7b_crosscat/external_gzh_metrics.json` | External scores, overall and per pointing |
+| `outputs/stage7c_generalisation/generalisation_report.json` | CANDELS ceiling and generalisation gap |
+| `outputs/stage4d_ablation/ablation_table.csv` | What each model and input adds |
+| `outputs/pipeline.log`, `outputs/run_log.json` | Full log, and the status and time of each stage |
+
+Useful catalogue columns:
+
+| Column | Meaning |
+|---|---|
+| `classification` | Star, Galaxy or Noise |
+| `pred_class`, `p_smooth` … `p_ambiguous` | Predicted class and calibrated probabilities |
+| `is_pseudo_label` | False if the galaxy has a GZH label, True if it has a model prediction only |
+| `gz_label`, `k15_class` | The GZH-derived label and the CANDELS expert class |
+| `p_merger` | Merger probability, best read as a ranking |
+| `classification_override`, `cr_suspect` | Why a rule changed the class, and whether the object may be a cosmic ray |
+
+`split_tag` shows the split. Train and dev galaxies carry their out-of-fold prediction, so their catalogue
+predictions never come from a model that saw them.
+
+## Pipeline stages
+
+There are 28 stages in ten phases. Phase 5 runs before Phase 4, so the models train on the refined measurements.
+
+| Phase | Stages | What happens |
+|---|---|---|
+| 0 Governance | 0 | Split the sky into regions, with collars so that splits share no pixels |
+| 1 Preprocessing | 1a–1e | Read FITS files, frame QC, detection and cosmic rays, PSF matching, first morphology |
+| 2 Segregation | 2a–2e | Autoencoder, clustering, baseline, naming clusters by evidence, physical gate |
+| 3 Routing | 3a–3c | GZH labels for galaxies, stars for calibration, noise model |
+| 5 Calibration | 5a–5b | Empirical PSF, second morphology pass |
+| 4 Supervised | 4a–4d | Galaxy stamps and CNN features, ensemble, calibration, ablation |
+| 6 Evaluation | 6a–6c | Test score, uncertainty audit, SHAP and Grad-CAM |
+| 7 Robustness | 7a–7c | Taxonomy ceiling, external and CANDELS scores, generalisation gap |
+| 8 Catalogue | 8 | `catalog.csv`, column dictionary, delivery checks |
+| 9 Atlas | 9 | Galaxy image atlas |
+
+## Repository layout
+
+```text
+pixels2provenance/
+├── run_pipeline.py          Runs the stages
+├── config.yaml              All settings, including the split plan and label rules
+├── requirements.txt         Python packages
+├── test_split_ledger.json   Every evaluation of the test split
+├── DEVELOPMENT_LOG.md       History of changes and their effect
+├── report/                  Project report
+├── src/p2p/                 Shared code: detection, morphology, networks, inference
+│   └── stages/              One file per stage, each starting with Purpose / Method / Output
+├── tools/                   Download, inspection and model-export tools
+└── data/
+    ├── raw/                 FITS images (not in the repository)
+    └── catalogs/            GZH, Gaia and CANDELS tables (not in the repository)
+```
+
+## Troubleshooting
+
+| Message or problem | Fix |
+|---|---|
+| `... not found - run stage X first` | Run the earlier stage, or use `--from` |
+| `No labelled galaxies in split(s) [...]` | Lower `partition.collar_arcmin`, or use apply mode if the field has too few GZH labels |
+| `No Galaxy Zoo: Hubble galaxies cover this field` | Use apply mode, or choose a field GZH covers |
+| `get_fits.py`: `-> nothing usable for ...` | The line above says why; try another position, `--instrument` or `--allow-single` |
+| `catalogs: required column(s) not found` | Run `python tools/check_catalog_columns.py`, then fix `catalogs.<kind>.columns` |
+| `BIC still falling at k_max` | Expected on this data: the knee of the BIC curve is used |
+| Stage 1e or 5b is very slow | `statmorph` is slow per source; set `project.n_jobs: -1` |
+| Out of memory in Stage 1c | Close other programs, or process fewer pointings at a time |
+
+## Main references
+
+- Willett et al. 2017, MNRAS 464, 4176: Galaxy Zoo: Hubble
+- Kartaltepe et al. 2015, ApJS 221, 11: CANDELS visual classifications
+- Gaia Collaboration, Vallenari et al. 2023, A&A 674, A1: Gaia DR3
+- Rodriguez-Gomez et al. 2019, MNRAS 483, 4140: statmorph
+- He et al. 2016 (ResNet); Tan & Le 2019 (EfficientNet); Chen & Guestrin 2016 (XGBoost)
+
+The report has the full list. Anthropic's Claude was used as an AI assistant during the project, as the report
+states.

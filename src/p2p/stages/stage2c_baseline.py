@@ -21,7 +21,7 @@ import pandas as pd
 
 from ..catalogs import load_gaia, propagate_gaia
 from ..context import Ctx, load_json, load_objects
-from ..utils import noise_evidence, sky_crossmatch
+from ..utils import match_with_offset, noise_evidence
 
 
 def gaia_crossmatch(ctx: Ctx, df: pd.DataFrame, pts: dict, metas):
@@ -40,7 +40,28 @@ def gaia_crossmatch(ctx: Ctx, df: pd.DataFrame, pts: dict, metas):
         if not m.any():
             continue
         g = propagate_gaia(gaia, p["epoch"], ctx.cfg["catalogs"]["gaia"].get("epoch", 2016.0))
-        idx, sep, hit = sky_crossmatch(df.ra[m], df.dec[m], g.ra, g.dec, cfg["gaia_radius_arcsec"])
+        # the pointing's astrometry can be off by up to ~1" from Gaia: measure that offset (if enough stars) first
+        idx, sep, hit, off = match_with_offset(df.ra[m], df.dec[m], g.ra, g.dec, cfg["gaia_radius_arcsec"],
+                                               search_arcsec=2.0)
+        ctx.log.info(f"[Stage 2c] {pid}: Gaia offset removed dRA {off[0]:+.2f}\", dDec {off[1]:+.2f}\" -> "
+                     f"{int(hit.sum())} matches")
+        # bright, moving Gaia stars: a saturated star's bleed column can move our centroid ~3", beyond the
+        # 0.5" match - the nearest source within gating.bright_star_core_arcsec is that star (31 Oct)
+        gcfg = ctx.cfg.get("gating", {})
+        if gcfg.get("bright_star_mask", True):
+            gmax, core = float(gcfg.get("bright_star_gmax", 17.0)), float(gcfg.get("bright_star_core_arcsec", 3.0))
+            pm = np.hypot(g.pmra.fillna(0).to_numpy(float), g.pmdec.fillna(0).to_numpy(float))
+            moving = (np.abs(g.parallax.fillna(0).to_numpy(float)) > 1.0) | (pm > 5.0)
+            ra_m, de_m = df.ra[m].to_numpy(float), df.dec[m].to_numpy(float)
+            taken = set(idx[hit].tolist())
+            for k in np.where((g.g_mag.to_numpy(float) < gmax) & moving)[0]:
+                if k in taken:
+                    continue
+                s = np.hypot((ra_m - g.ra.iloc[k]) * np.cos(np.radians(g.dec.iloc[k])), de_m - g.dec.iloc[k]) * 3600
+                i = int(np.nanargmin(s))
+                if s[i] < core and not hit[i]:
+                    hit[i], idx[i], sep[i] = True, k, s[i]
+                    taken.add(k)
         rows = np.where(m)[0][hit]
         j = idx[hit]
         hit_all[rows] = True

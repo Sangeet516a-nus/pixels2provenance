@@ -80,6 +80,11 @@ def clean_result(res, n_bounds=(0.05, 8.0), rhalf_max=64.0):
     stuck = (np.isfinite(n) and (n <= n_bounds[0] or n >= n_bounds[1])) or (np.isfinite(rh) and rh > rhalf_max)
     if stuck or not np.isfinite(n):
         out["flag_sersic"] = max(1.0, float(np.nan_to_num(out.get("flag_sersic", 1.0), nan=1.0)))
+    if np.nan_to_num(out.get("flag_sersic", 1.0), nan=1.0) != 0:
+        # a failed / stuck fit is not a measurement: empty, not a number the classifier or a reader could trust
+        # (31 Oct: 60 % of galaxies had a flagged fit, 1,501 with r_half > 50 px); flag_sersic keeps the evidence
+        for k in ("sersic_n", "sersic_rhalf", "sersic_ellip"):
+            out[k] = np.nan
     return out
 
 
@@ -96,7 +101,6 @@ def _measure_one(cube, seg, gain, psf=None, mode="psf_fit", rl_iters=10, sersic_
     mask = (seg == 2) | (seg == 3) | ((img == 0) & ~target)
     use_psf = psf
     if mode == "deconvolve" and psf is not None:
-        dil = np.zeros_like(target)
         from scipy.ndimage import binary_dilation
         dil = binary_dilation(target, iterations=3)
         img = np.where(dil, richardson_lucy(np.where(dil, img, 0), psf, rl_iters), img)

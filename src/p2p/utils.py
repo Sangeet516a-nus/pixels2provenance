@@ -125,24 +125,63 @@ def sky_crossmatch(ra1, dec1, ra2, dec2, radius_arcsec=0.5):
     return np.where(hit, idx, -1), sep, hit
 
 
-def match_with_offset(ra1, dec1, ra2, dec2, radius_arcsec=0.5, search_arcsec=1.5, estimate=True):
-    """Remove the median catalogue-to-image offset before the final match
-    (old catalogue coordinates can be off by a few tenths of an arcsecond).
-    Matches are one-to-one: if two image objects claim one catalogue row,
-    only the closer keeps it. Returns idx2, sep, hit, (dra", ddec")."""
-    ra2 = np.asarray(ra2, float).copy()
-    dec2 = np.asarray(dec2, float).copy()
-    off = (0.0, 0.0)
-    if estimate and len(ra1) and len(ra2):
-        idx, sep, hit = sky_crossmatch(ra1, dec1, ra2, dec2, search_arcsec)
-        if hit.sum() >= 5:
-            cosd = np.cos(np.deg2rad(np.asarray(dec1)[hit]))
-            dra = np.median((np.asarray(ra1)[hit] - ra2[idx[hit]]) * cosd) * 3600
-            ddec = np.median((np.asarray(dec1)[hit] - dec2[idx[hit]]) * 3600)
-            ra2 = ra2 + dra / 3600 / np.cos(np.deg2rad(dec2))
-            dec2 = dec2 + ddec / 3600
-            off = (float(dra), float(ddec))
-    idx, sep, hit = sky_crossmatch(ra1, dec1, ra2, dec2, radius_arcsec)
+def estimate_offset(ra1, dec1, ra2, dec2, search_arcsec=3.0, bin_arcsec=0.1, min_pairs=5):
+    """Image-minus-catalogue offset (dRA cos dec, dDec) in arcsec, or None.
+    Every image-catalogue pair closer than `search_arcsec` votes in a 2-D histogram of its offset; the PEAK is the
+    common offset (random pairs spread evenly, true pairs pile up), so offsets larger than the final match radius
+    are found too. The peak is refined by the median of the pairs within two bins of it. None when the peak holds
+    fewer than `min_pairs` pairs or does not stand out (> 5x the mean bin)."""
+    ra1, dec1 = np.asarray(ra1, float), np.asarray(dec1, float)
+    ra2, dec2 = np.asarray(ra2, float), np.asarray(dec2, float)
+    if len(ra1) == 0 or len(ra2) == 0:
+        return None
+    r0, d0 = np.median(ra1), np.median(dec1)
+    c0 = np.cos(np.deg2rad(d0))
+    a = np.c_[(ra1 - r0) * c0 * 3600, (dec1 - d0) * 3600]
+    b = np.c_[(ra2 - r0) * c0 * 3600, (dec2 - d0) * 3600]
+    lo, hi = a.min(0) - search_arcsec, a.max(0) + search_arcsec
+    b = b[np.all((b >= lo) & (b <= hi), axis=1)]
+    if len(b) == 0:
+        return None
+    pairs = cKDTree(a).query_ball_tree(cKDTree(b), search_arcsec)
+    ii = np.repeat(np.arange(len(a)), [len(p) for p in pairs])
+    jj = np.fromiter((j for p in pairs for j in p), int, count=len(ii))
+    if len(ii) < min_pairs:
+        return None
+    d = a[ii] - b[jj]
+    nb = int(round(2 * search_arcsec / bin_arcsec))
+    H, xe, ye = np.histogram2d(d[:, 0], d[:, 1], bins=nb, range=[[-search_arcsec, search_arcsec]] * 2)
+    i, j = np.unravel_index(np.argmax(H), H.shape)
+    if H[i, j] < max(min_pairs, 5 * H.mean()):
+        return None
+    px, py = (xe[i] + xe[i + 1]) / 2, (ye[j] + ye[j + 1]) / 2
+    near = np.hypot(d[:, 0] - px, d[:, 1] - py) <= 2 * bin_arcsec
+    return float(np.median(d[near, 0])), float(np.median(d[near, 1])), int(near.sum())
+
+
+def match_with_offset(ra1, dec1, ra2, dec2, radius_arcsec=0.5, search_arcsec=3.0, estimate=True, groups=None):
+    """Match image objects (1) to a catalogue (2) after removing the catalogue-to-image offset.
+    The offset is measured SEPARATELY for every group of image objects (groups = their pointing): pointings come
+    from different HST programmes whose astrometry differs by up to ~1", so one offset for all of them leaves the
+    worst pointing unmatched. A group whose offset cannot be measured uses the offset of all objects together.
+    Matches are one-to-one: if two image objects claim one catalogue row, only the closer keeps it.
+    Returns idx2 (-1 = none), sep", hit, offset: (dra", ddec") without groups, {group: (dra", ddec")} with groups."""
+    ra1, dec1 = np.asarray(ra1, float), np.asarray(dec1, float)
+    ra2, dec2 = np.asarray(ra2, float), np.asarray(dec2, float)
+    n = len(ra1)
+    grp = np.zeros(n, int) if groups is None else np.asarray(groups)
+    glob = estimate_offset(ra1, dec1, ra2, dec2, search_arcsec) if estimate and n else None
+    idx, sep, hit = np.full(n, -1), np.full(n, np.inf), np.zeros(n, bool)
+    offs = {}
+    for g in pd.unique(grp):
+        m = grp == g
+        off = (estimate_offset(ra1[m], dec1[m], ra2, dec2, search_arcsec) if estimate and groups is not None else None) \
+            or glob or (0.0, 0.0, 0)
+        r2 = ra2 + off[0] / 3600 / np.cos(np.deg2rad(dec2))
+        d2 = dec2 + off[1] / 3600
+        i, s, h = sky_crossmatch(ra1[m], dec1[m], r2, d2, radius_arcsec)
+        idx[m], sep[m], hit[m] = i, s, h
+        offs[g if groups is not None else 0] = (round(off[0], 3), round(off[1], 3))
     order = np.argsort(np.where(hit, sep, np.inf))
     taken = set()
     for i in order:
@@ -152,7 +191,14 @@ def match_with_offset(ra1, dec1, ra2, dec2, radius_arcsec=0.5, search_arcsec=1.5
             else:
                 taken.add(idx[i])
     idx = np.where(hit, idx, -1)
-    return idx, sep, hit, off
+    return idx, sep, hit, (offs if groups is not None else offs[0])
+
+
+def fmt_offsets(off):
+    """Log text of the per-pointing offsets."""
+    if isinstance(off, dict):
+        return ", ".join(f"{k} ({v[0]:+.2f}\", {v[1]:+.2f}\")" for k, v in off.items())
+    return f"dRA {off[0]:+.3f}\", dDec {off[1]:+.3f}\""
 
 
 # ---------------------------------------------------------------- metrics
@@ -227,3 +273,13 @@ def noise_evidence(df: pd.DataFrame, cfg_baseline: dict) -> np.ndarray:
 def as_bool(series) -> pd.Series:
     """CSV round-trips turn booleans into strings / NaN; normalise them."""
     return series.map(lambda v: str(v).strip().lower() in ("true", "1", "1.0")).astype(bool)
+
+
+def galaxy_track(df) -> "np.ndarray":
+    """The galaxy track: Galaxy, not an extreme outlier, and not a fragment of a brighter galaxy (Stage 2e
+    fragment_of; 31 Oct). Every stage that selects galaxies uses this one rule."""
+    cls = df["cluster_semantic"] if "cluster_semantic" in df else df["classification"]
+    m = (cls == "Galaxy") & (df["anomaly_flag"].fillna(0) == 0)
+    if "fragment_of" in df:
+        m &= df["fragment_of"].isna()
+    return m.to_numpy()
